@@ -3,10 +3,76 @@
 require_once 'config.php';
 require_once 'functions.php';
 
+// Define helper functions if not already defined in functions.php
+if (!function_exists('calculateAverageDuration')) {
+    function calculateAverageDuration($participants) {
+        if (empty($participants)) return 0;
+        $total = 0;
+        $count = 0;
+        foreach ($participants as $p) {
+            if (isset($p['duration']) && is_numeric($p['duration'])) {
+                $total += $p['duration'];
+                $count++;
+            }
+        }
+        return $count > 0 ? round($total / $count, 1) : 0;
+    }
+}
+
+if (!function_exists('getFirstJoinTime')) {
+    function getFirstJoinTime($participants) {
+        if (empty($participants)) return 'N/A';
+        $firstTime = null;
+        foreach ($participants as $p) {
+            if (isset($p['join_time'])) {
+                $time = strtotime($p['join_time']);
+                if (!$firstTime || $time < $firstTime) {
+                    $firstTime = $time;
+                }
+            }
+        }
+        return $firstTime ? date('M j, Y g:i A', $firstTime) : 'N/A';
+    }
+}
+
+if (!function_exists('getLastLeaveTime')) {
+    function getLastLeaveTime($participants) {
+        if (empty($participants)) return 'N/A';
+        $lastTime = null;
+        foreach ($participants as $p) {
+            if (isset($p['leave_time']) && !empty($p['leave_time'])) {
+                $time = strtotime($p['leave_time']);
+                if (!$lastTime || $time > $lastTime) {
+                    $lastTime = $time;
+                }
+            }
+        }
+        return $lastTime ? date('M j, Y g:i A', $lastTime) : 'N/A';
+    }
+}
+
 $message = '';
 $attendanceData = getAttendanceData();
 $specificMeetingId = isset($_GET['id']) ? trim($_GET['id']) : null;
 
+// Handle meeting end request
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['end_meeting'])) {
+    $meetingIdToEnd = trim($_POST['meeting_id']);
+    $result = endZoomMeeting($meetingIdToEnd);
+    
+    if ($result['success']) {
+        $message = "Meeting {$meetingIdToEnd} has been ended successfully!";
+        // Update meeting status in our data
+        if (isset($attendanceData['meetings'][$meetingIdToEnd])) {
+            $attendanceData['meetings'][$meetingIdToEnd]['status'] = 'completed';
+            saveAttendanceData($attendanceData);
+        }
+    } else {
+        $message = "Error ending meeting: " . ($result['error'] ?? 'Unknown error');
+    }
+}
+
+// Handle attendance tracking request
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['meeting_id'])) {
     $meetingId = trim($_POST['meeting_id']);
 
@@ -68,6 +134,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['meeting_id'])) {
             padding: 15px;
             background-color: #f8f9fa;
             border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .meeting-card:hover {
+            background-color: #e9ecef;
+            cursor: pointer;
+        }
+
+        .meeting-details {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .meeting-actions {
+            margin-top: 15px;
+        }
+
+        .badge-active {
+            background-color: #28a745;
+        }
+
+        .badge-completed {
+            background-color: #6c757d;
+        }
+
+        .participant-count {
+            font-size: 1.2rem;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -78,13 +174,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['meeting_id'])) {
 
         <?php if ($message): ?>
             <div class="alert alert-<?= strpos($message, 'Error') !== false ? 'danger' : 'info' ?>">
-                <?= htmlspecialchars($message) ?>
-                <?php if (strpos($message, '<br>') !== false): ?>
-                    <?= substr($message, strpos($message, '<br>') + 4) ?>
-                <?php endif; ?>
+                <?= $message ?>
             </div>
         <?php endif; ?>
 
+        <!-- Track Meeting Form -->
         <div class="card mb-4">
             <div class="card-header bg-primary text-white">
                 <h4>Track Meeting</h4>
@@ -105,58 +199,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['meeting_id'])) {
             </div>
         </div>
 
+        <!-- Meeting Details Section -->
         <?php if ($specificMeetingId && isset($attendanceData['meetings'][$specificMeetingId])): ?>
             <div class="card">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4>Meeting Details</h4>
+                    <span class="badge <?= $attendanceData['meetings'][$specificMeetingId]['status'] === 'active' ? 
+                        'bg-success' : 'bg-secondary' ?>">
+                        <?= ucfirst($attendanceData['meetings'][$specificMeetingId]['status']) ?>
+                    </span>
                 </div>
                 <div class="card-body">
+                    <!-- Meeting Information Card -->
+                    <div class="meeting-details">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>
+                                    <i class="fas fa-video zoom-icon"></i>
+                                    Meeting ID: <?= htmlspecialchars($specificMeetingId) ?>
+                                </h5>
+                                <p class="text-muted">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    Last updated: <?= date('M j, Y g:i A', strtotime($attendanceData['meetings'][$specificMeetingId]['last_updated'])) ?>
+                                </p>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <div class="participant-count">
+                                    <i class="fas fa-users me-2"></i>
+                                    <?= isset($attendanceData['attendees'][$specificMeetingId]) ? 
+                                        count($attendanceData['attendees'][$specificMeetingId]) : 0 ?> Participants
+                                </div>
+                            </div>
+                        </div>
 
-
-                    <div class="table-responsive mt-4">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Participants</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <div class="meeting-card">
-                                            <a href="index.php?id=<?= $specificMeetingId ?>"
-                                                style="text-decoration: none; color: inherit;">
-                                                <i class="fas fa-video zoom-icon"></i>
-                                                <strong>Meeting ID: <?= htmlspecialchars($specificMeetingId) ?></strong>
-                                                <div class="text-muted small mt-1">
-                                                    <i class="fas fa-id-badge me-1"></i>
-                                                    ID: <?= htmlspecialchars($specificMeetingId) ?>
-                                                </div>
-                                            </a>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <?= isset($attendanceData['attendees'][$specificMeetingId]) ?
-                                            count($attendanceData['attendees'][$specificMeetingId]) : 0 ?>
-                                    </td>
-                                    <td>
-                                        <?= $attendanceData['meetings'][$specificMeetingId]['status'] === 'active' ?
-                                            '<span class="badge bg-success">Active</span>' :
-                                            '<span class="badge bg-secondary">Completed</span>' ?>
-                                    </td>
-                                    <td>
-                                        <a href="javascript:void(0)"
-                                            onclick="showParticipants('<?= htmlspecialchars($specificMeetingId) ?>')"
-                                            class="btn btn-sm btn-info">
-                                            View Participants
-                                        </a>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <!-- Meeting Actions -->
+                        <div class="meeting-actions">
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-info view-participants-btn" data-meeting-id="<?= htmlspecialchars($specificMeetingId) ?>">
+                                    <i class="fas fa-list me-1"></i> View Participants
+                                </button>
+                                
+                                <?php if ($attendanceData['meetings'][$specificMeetingId]['status'] === 'active'): ?>
+                                    <form method="POST" onsubmit="return confirm('Are you sure you want to end this meeting?');">
+                                        <input type="hidden" name="meeting_id" value="<?= htmlspecialchars($specificMeetingId) ?>">
+                                        <button type="submit" name="end_meeting" class="btn btn-danger">
+                                            <i class="fas fa-stop-circle me-1"></i> End Meeting
+                                        </button>
+                                    </form>
+                                <?php else: ?>
+                                    <button class="btn btn-secondary" disabled>
+                                        <i class="fas fa-check-circle me-1"></i> Meeting Completed
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
             </div>
         <?php elseif (empty($attendanceData['meetings'])): ?>
@@ -200,16 +298,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['meeting_id'])) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById('trackForm').addEventListener('submit', function () {
-            const button = document.getElementById('trackButton');
-            const spinner = document.getElementById('spinner');
-            const buttonText = document.getElementById('buttonText');
+        // Handle participant view button click
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up event listener for view participants button
+            document.querySelector('.view-participants-btn')?.addEventListener('click', function() {
+                const meetingId = this.getAttribute('data-meeting-id');
+                showParticipants(meetingId);
+            });
 
-            button.disabled = true;
-            buttonText.textContent = 'Processing...';
-            spinner.classList.remove('d-none');
+            // Auto-focus on meeting ID field
+            document.getElementById('meeting_id')?.focus();
+
+            // Handle form submission loading state
+            document.getElementById('trackForm')?.addEventListener('submit', function() {
+                const button = document.getElementById('trackButton');
+                const spinner = document.getElementById('spinner');
+                const buttonText = document.getElementById('buttonText');
+
+                if (button && spinner && buttonText) {
+                    button.disabled = true;
+                    buttonText.textContent = 'Processing...';
+                    spinner.classList.remove('d-none');
+                }
+            });
         });
 
+        // Show participants modal
         function showParticipants(meetingId) {
             const modal = new bootstrap.Modal(document.getElementById('participantsModal'));
             const tableBody = document.querySelector('#participantsTable tbody');
@@ -219,6 +333,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['meeting_id'])) {
             document.getElementById('modalMeetingId').textContent = meetingId;
             modal.show();
 
+            // Fetch participant data
             fetch('get_participants.php?meeting_id=' + encodeURIComponent(meetingId))
                 .then(response => {
                     if (!response.ok) throw new Error('Network response was not ok');
@@ -255,5 +370,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['meeting_id'])) {
         }
     </script>
 </body>
-
 </html>
