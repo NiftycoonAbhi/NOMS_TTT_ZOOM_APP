@@ -1,7 +1,7 @@
-<?php include __DIR__ . '../../../headers/header.php'; ?>
+<?php include __DIR__ . '/../headers/header.php'; ?>
 <?php
-require_once 'config.php';
-require_once 'functions.php';
+require_once '../admin/includes/config.php';
+require_once '../admin/includes/functions.php';
 
 // Define helper functions if not already defined in functions.php
 if (!function_exists('calculateAverageDuration')) {

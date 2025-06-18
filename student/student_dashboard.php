@@ -1,8 +1,8 @@
 <?php
-require '../zoom_api.php';
+require '../admin/includes/zoom_api.php';
 
-$dataFile = '../registrations.json';
-$removedFile = '../removed_students.json';
+$dataFile = '../data/registrations.json';
+$removedFile = '../data/removed_students.json';
 $searchTerm = isset($_GET['student_id']) ? trim($_GET['student_id']) : '';
 $studentMeetings = [];
 $removedStudents = [];

@@ -1,12 +1,13 @@
-<?php include './headers/header1.php'; ?>
+<?php include '../headers/header.php'; ?>
 <?php
-require 'zoom_api.php';
+require '../admin/includes/config.php';
+require '../admin/includes/zoom_api.php';
 
 $link = "";
 $fullName = "";
 $meetingId = isset($_POST['meeting_id']) ? trim($_POST['meeting_id']) : '';
-$dataFile = 'registrations.json';
-$removedFile = 'removed_students.json';
+$dataFile = __DIR__ . '/../data/registrations.json';
+$removedFile = __DIR__ . '/../data/removed_students.json';
 $registrations = [];
 $currentMeetingRegistrations = [];
 $removedStudents = [];

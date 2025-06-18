@@ -1,5 +1,5 @@
 <?php
-require_once 'config.php';
+require_once '../admin/includes/config.php';
 
 // Set default timezone to IST
 date_default_timezone_set('Asia/Kolkata');

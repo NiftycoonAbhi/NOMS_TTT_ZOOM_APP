@@ -161,7 +161,7 @@
                         <a class="nav-link" href="../../NOMS_TTT_ZOOM_APP/student/student_dashboard.php">Student Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="../NOMS_TTT_ZOOM_APP/admin/zoom-attendance-tracker/admin_dashboard.php">Admin Dashboard</a>
+                        <a class="nav-link" href="../admin/admin_dashboard.php">Admin Dashboard</a>
                     </li>
                 </ul>
             </div>

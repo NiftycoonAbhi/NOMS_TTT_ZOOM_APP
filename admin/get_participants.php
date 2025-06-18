@@ -1,6 +1,6 @@
 <?php
-require_once 'config.php';
-require_once 'functions.php';
+require_once '../admin/includes/config.php';
+require_once '../admin/includes/functions.php';
 
 $meetingId = $_GET['meeting_id'] ?? '';
 $attendanceData = getAttendanceData();

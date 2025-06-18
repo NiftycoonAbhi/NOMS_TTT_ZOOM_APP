@@ -1,5 +1,5 @@
 <?php
-require 'token.php';
+require_once __DIR__ . '/../../Home/token.php';
 
 function createMeeting($topic, $start, $duration=60) {
     $token = getZoomToken();

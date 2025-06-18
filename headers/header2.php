@@ -129,7 +129,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
             <!-- Logo/Brand with icon -->
-           <a class="navbar-brand" href="../home.php">
+           <a class="navbar-brand" href="../main/home.php">
   <i class="fas fa-graduation-cap"></i>
   <span>TTT</span> Academy
 </a>
@@ -150,10 +150,10 @@
                         </a>
                     </li>
                    <li class="nav-item">
-                    <a class="nav-link" href="student/student_dashboard.php">Student Dashboard</a>
+                    <a class="nav-link" href="../student/student_dashboard.php">Student Dashboard</a>
                     </li>
                     <li class="nav-item">
-                    <a class="nav-link" href="admin\admin_dashboard.php">Admin Dashboard</a>
+                    <a class="nav-link" href="admin_dashboard.php">Admin Dashboard</a>
                     </li>
                 </ul>
             </div>
