@@ -163,6 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fname'])) {
 <body>
   <div class="container py-4">
     <!-- Meeting ID Input -->
+     <!-- section for Entering the meeting id that is created in the zoom app -->
     <div class="meeting-id-container">
       <form method="post" class="row g-3 align-items-center">
         <div class="col-md-12">
@@ -178,6 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fname'])) {
     </div>
 
     <!-- Forms Container -->
+     <!-- Student loading from the database -->
     <div class="form-container">
       <!-- Student Selection Form (Left Column) -->
       <div class="form-column">
@@ -239,8 +241,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fname'])) {
           </div>
         </div>
       </div>
-
+ <!-- Student loading from the database ends here -->
       <!-- Registration Form (Right Column) -->
+       <!-- Manually adding the student with there student id,student  first name and last name -->
       <div class="form-column">
         <div class="registration-card card">
           <div class="card-header">
@@ -314,8 +317,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fname'])) {
         </div>
       </div>
     </div>
+     <!-- Manually adding the student with there student id,student  first name and last name  ends here-->
 
     <!-- Registrations List -->
+     <!-- Dispaly the registered student list from meeting id starts here -->
     <?php if ($meetingId): ?>
       <div class="registration-card card mt-4">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -373,7 +378,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fname'])) {
       </div>
     <?php endif; ?>
   </div>
-
+ <!-- Dispaly the registered student list from meeting id ends here -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // Auto-submit form when meeting ID changes

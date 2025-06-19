@@ -166,6 +166,7 @@ try {
             <div class="alert alert-success"><?php echo $success; ?></div>
         <?php endif; ?>
 
+        <!-- display the total number meetings present in the zoom account -->
         <div class="row mb-4">
             <!-- Stats Card -->
             <div class="col-xl-3 col-md-6 mb-4">
@@ -188,6 +189,7 @@ try {
             </div>
         </div>
 
+        <!-- display the list of the upcoming meetings -->
         <div class="card shadow mb-4">
             <div class="card-header py-3">
                 <h5 class="m-0 font-weight-bold text-primary"><i class="fas fa-list me-2"></i>Zoom Meetings</h5>
@@ -242,10 +244,12 @@ try {
                                     <td>
                                         <?php if (!$isPast): ?>
                                         <?php endif; ?>
+                                        <!-- to edit the details of the meeting -->
                                         <a href="https://zoom.us/meeting/<?php echo $meeting['id']; ?>/edit" target="_blank"
                                            class="btn btn-sm btn-warning action-btn" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        <!-- to delete the meeting directly from the zoom meetings -->
                                         <form method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this meeting?')">
                                             <input type="hidden" name="meeting_id" value="<?php echo $meeting['id']; ?>">
                                             <button type="submit" name="delete_meeting" class="btn btn-sm btn-danger action-btn" title="Delete">

@@ -1,3 +1,4 @@
+<!-- zoom data that should be used for the other funcationalities -->
 <?php
 // Zoom API configuration
 define('ZOOM_ACCOUNT_ID', '89NOV9jAT-SH7wJmjvsptg');
@@ -12,4 +13,3 @@ if (!file_exists(ATTENDANCE_FILE)) {
     file_put_contents(ATTENDANCE_FILE, json_encode(['meetings' => [], 'attendees' => []]));
 }
 
-// Start session

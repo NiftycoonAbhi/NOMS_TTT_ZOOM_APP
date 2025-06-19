@@ -4,6 +4,7 @@ require_once '../admin/includes/config.php';
 // Set default timezone to IST
 date_default_timezone_set('Asia/Kolkata');
 
+// to generate the access token starts here
 function getZoomAccessToken() {
     $accountId = ZOOM_ACCOUNT_ID;
     $clientId = ZOOM_CLIENT_ID;
@@ -30,7 +31,7 @@ function getZoomAccessToken() {
     $data = json_decode($response, true);
     return $data['access_token'] ?? null;
 }
-
+// function to get the student list  from the meeting
 function getMeetingParticipants($meetingId) {
     $token = getZoomAccessToken();
     if (!$token) {
@@ -61,6 +62,7 @@ function getMeetingParticipants($meetingId) {
     return getActiveMeetingParticipants($meetingId);
 }
 
+// function to get the active student list from the running meeting that host by admin
 function getActiveMeetingParticipants($meetingId) {
     $token = getZoomAccessToken();
     if (!$token) {
@@ -114,6 +116,8 @@ function getActiveMeetingParticipants($meetingId) {
     return $formattedData;
 }
 
+
+// to save the attendance data into the json 
 function saveAttendanceData($meetingId, $participants, $meetingStatus = 'completed') {
     $data = json_decode(file_get_contents(ATTENDANCE_FILE), true);
     $timestamp = date('Y-m-d H:i:s');
@@ -164,6 +168,7 @@ function saveAttendanceData($meetingId, $participants, $meetingStatus = 'complet
     return true;
 }
 
+// function to get the atendance data to dispaly in the student dashboard
 function getAttendanceData() {
     return json_decode(file_get_contents(ATTENDANCE_FILE), true);
 }

@@ -30,6 +30,7 @@ function createMeeting($topic, $start, $duration=60) {
     return $res['id'];
 }
 
+// function to register student to the particular meeting
 function registerStudent($meetingId, $firstName, $lastName = '', $studentId = '') {
     $token = getZoomToken();
     
@@ -73,6 +74,7 @@ function registerStudent($meetingId, $firstName, $lastName = '', $studentId = ''
     return $res['join_url'];
 }
 
+// function to generate the meeting url separately for the student
 function getMeetingJoinUrl($meetingId) {
     $token = getZoomToken();
     $ch = curl_init("https://api.zoom.us/v2/meetings/$meetingId");
