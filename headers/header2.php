@@ -129,7 +129,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
             <!-- Logo/Brand with icon -->
-           <a class="navbar-brand" href="../main/home.php">
+           <a class="navbar-brand" href="../Home/index.php">
   <i class="fas fa-graduation-cap"></i>
   <span>TTT</span> Academy
 </a>

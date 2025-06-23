@@ -7,7 +7,12 @@
         },
         "87185382135": {
             "first_tracked": "2025-06-18 16:47:21",
-            "last_updated": "2025-06-18 16:49:30",
+            "last_updated": "2025-06-23 10:29:30",
+            "status": "completed"
+        },
+        "81041662397": {
+            "first_tracked": "2025-06-23 10:36:26",
+            "last_updated": "2025-06-23 11:40:26",
             "status": "completed"
         }
     },
@@ -39,7 +44,27 @@
                 "join_time": "2025-06-17 15:45:04",
                 "leave_time": "2025-06-17 15:46:49",
                 "duration": 1.8,
-                "last_updated": "2025-06-18 16:49:30",
+                "last_updated": "2025-06-23 10:29:30",
+                "status": "completed"
+            }
+        },
+        "81041662397": {
+            "s_CSJiJ-TDKg0IUIRt8oDA": {
+                "name": "T T T",
+                "email": "tttacademyboard@gmail.com",
+                "join_time": "2025-06-23 11:33:00",
+                "leave_time": "2025-06-23 11:40:19",
+                "duration": 7.3,
+                "last_updated": "2025-06-23 11:40:26",
+                "status": "completed"
+            },
+            "": {
+                "name": "Punith K",
+                "email": "punith@gmail.com",
+                "join_time": "2025-06-23 11:33:10",
+                "leave_time": "2025-06-23 11:40:01",
+                "duration": 6.9,
+                "last_updated": "2025-06-23 11:40:26",
                 "status": "completed"
             }
         }

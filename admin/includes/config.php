@@ -1,4 +1,3 @@
-<!-- zoom data that should be used for the other funcationalities -->
 <?php
 // Zoom API configuration
 define('ZOOM_ACCOUNT_ID', '89NOV9jAT-SH7wJmjvsptg');

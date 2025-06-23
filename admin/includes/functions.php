@@ -105,7 +105,7 @@ function getActiveMeetingParticipants($meetingId) {
         
         $formattedData['participants'][] = [
             'id' => $participant['id'] ?? uniqid(),
-            'name' => $participant['name'],
+            'name' => $participant['name'] ?? '',
             'user_email' => $participant['email'] ?? '',
             'join_time' => $participant['join_time'],
             'leave_time' => '', // Will be empty for active participants
