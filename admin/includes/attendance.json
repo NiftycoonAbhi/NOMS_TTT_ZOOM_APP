@@ -12,7 +12,7 @@
         },
         "81041662397": {
             "first_tracked": "2025-06-23 10:36:26",
-            "last_updated": "2025-06-23 11:40:26",
+            "last_updated": "2025-06-23 11:48:32",
             "status": "completed"
         }
     },
@@ -55,7 +55,7 @@
                 "join_time": "2025-06-23 11:33:00",
                 "leave_time": "2025-06-23 11:40:19",
                 "duration": 7.3,
-                "last_updated": "2025-06-23 11:40:26",
+                "last_updated": "2025-06-23 11:48:32",
                 "status": "completed"
             },
             "": {
@@ -64,7 +64,7 @@
                 "join_time": "2025-06-23 11:33:10",
                 "leave_time": "2025-06-23 11:40:01",
                 "duration": 6.9,
-                "last_updated": "2025-06-23 11:40:26",
+                "last_updated": "2025-06-23 11:48:32",
                 "status": "completed"
             }
         }

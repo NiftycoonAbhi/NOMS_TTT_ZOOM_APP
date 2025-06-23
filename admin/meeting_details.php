@@ -1,4 +1,4 @@
-<?php include __DIR__ . '/../headers/header.php'; ?>
+<?php include __DIR__ . '/../headers/header2.php'; ?>
 <?php
 require_once '../admin/includes/config.php';
 require_once '../admin/includes/functions.php';
