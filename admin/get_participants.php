@@ -3,7 +3,7 @@ require_once __DIR__ . '/../admin/includes/config.php';
 require_once __DIR__ . '/../admin/includes/functions.php';
 
 header('Content-Type: application/json');
-
+//   getting the list of the students present in the meeting
 try {
     $meetingId = $_GET['meeting_id'] ?? '';
     if (empty($meetingId) || !is_numeric($meetingId)) {

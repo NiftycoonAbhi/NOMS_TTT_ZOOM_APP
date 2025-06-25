@@ -114,6 +114,9 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <style>
         body {
             padding-top: 70px;
@@ -156,7 +159,7 @@ try {
     </style>
 </head>
 <body>
-   
+   <!-- MAIN DIV START -->
     <div class="container-fluid py-4">
         <?php if ($error): ?>
             <div class="alert alert-danger"><?php echo $error; ?></div>
@@ -166,7 +169,7 @@ try {
             <div class="alert alert-success"><?php echo $success; ?></div>
         <?php endif; ?>
 
-        <!-- display the total number meetings present in the zoom account -->
+        <!-- display the total number meetings present in the zoom account START-->
         <div class="row mb-4">
             <!-- Stats Card -->
             <div class="col-xl-3 col-md-6 mb-4">
@@ -188,6 +191,7 @@ try {
                 </div>
             </div>
         </div>
+        <!-- display the total number meetings present in the zoom account END-->    
 
         <!-- display the list of the upcoming meetings -->
         <div class="card shadow mb-4">
@@ -265,13 +269,17 @@ try {
             </div>
         </div>
     </div>
+    <!-- MAIN DIV END -->
 
+    <!-- MAIN STYLE START -->
+
+    <!-- MAIN STYLE END -->
+
+    <!-- MAIN JS START -->
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <!-- jQuery and DataTables -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <script>
         $(document).ready(function() {
             $('#meetingsTable').DataTable({
@@ -283,5 +291,6 @@ try {
             });
         });
     </script>
+    <!-- MAIN JS END -->
 </body>
 </html>

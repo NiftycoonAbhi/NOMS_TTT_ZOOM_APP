@@ -243,7 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fname'])) {
       </div>
  <!-- Student loading from the database ends here -->
       <!-- Registration Form (Right Column) -->
-       <!-- Manually adding the student with there student id,student  first name and last name -->
+       <!-- Manually adding the student with there student id,student  first name and last name start here -->
       <div class="form-column">
         <div class="registration-card card">
           <div class="card-header">
