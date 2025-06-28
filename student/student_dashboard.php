@@ -7,31 +7,42 @@ $searchTerm = isset($_GET['student_id']) ? trim($_GET['student_id']) : '';
 $studentMeetings = [];
 $removedStudents = [];
 
-// Load data
-if (file_exists($dataFile)) {
-    $registrations = json_decode(file_get_contents($dataFile), true) ?: [];
-}
+// Load registration data
+$registrations = file_exists($dataFile) ? json_decode(file_get_contents($dataFile), true) ?: [] : [];
+$removedStudents = file_exists($removedFile) ? json_decode(file_get_contents($removedFile), true) ?: [] : [];
 
-if (file_exists($removedFile)) {
-    $removedStudents = json_decode(file_get_contents($removedFile), true) ?: [];
-}
-
-// Find meetings for student
+// Search for meetings
 if (!empty($searchTerm)) {
     foreach ($registrations as $meetingId => $participants) {
         foreach ($participants as $id => $details) {
             $searchNormalized = strtolower(trim($searchTerm));
             $idNormalized = strtolower(trim($id));
-            // $emailNormalized = strtolower(trim($details['email']));
             $studentIdNormalized = isset($details['student_id']) ? strtolower(trim($details['student_id'])) : '';
-            
-            if ($searchNormalized === $idNormalized ||
-                $searchNormalized === $studentIdNormalized) {
-                
-                // Check if student was removed from this meeting
+
+            if ($searchNormalized === $idNormalized || $searchNormalized === $studentIdNormalized) {
                 $isRemoved = isset($removedStudents[$meetingId][$id]);
-                
                 if (!$isRemoved) {
+                    // Fetch Zoom Meeting Time
+                    $zoomDetails = getZoomMeetingDetails($meetingId);
+
+                    // Extract correct start time (supporting recurring meetings)
+                    $meetingTimeUTC = null;
+                    if (!empty($zoomDetails['occurrences'][0]['start_time'])) {
+                        $meetingTimeUTC = $zoomDetails['occurrences'][0]['start_time'];
+                    } elseif (!empty($zoomDetails['start_time'])) {
+                        $meetingTimeUTC = $zoomDetails['start_time'];
+                    }
+
+                    // Convert to IST
+                    $meetingTimeIST = $meetingTimeUTC 
+                        ? (new DateTime($meetingTimeUTC, new DateTimeZone('UTC')))
+                            ->setTimezone(new DateTimeZone('Asia/Kolkata'))
+                            ->format('Y-m-d h:i A')
+                        : 'Not available';
+
+                    // Override if not set
+                    $details['meeting_time'] = $meetingTimeIST;
+
                     $studentMeetings[] = [
                         'meeting_id' => $meetingId,
                         'details' => $details
@@ -55,6 +66,7 @@ if (!empty($searchTerm)) {
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      background-color: #fff;
     }
     .meeting-card {
       margin-bottom: 20px;
@@ -63,9 +75,9 @@ if (!empty($searchTerm)) {
   </style>
 </head>
 <body>
-  <div class="dashboard-container bg-white">
+  <div class="dashboard-container">
     <h1 class="text-center mb-4">Student Meeting Dashboard</h1>
-    
+
     <form method="get" class="mb-5">
       <div class="input-group">
         <input type="text" name="student_id" class="form-control form-control-lg" 
@@ -77,14 +89,17 @@ if (!empty($searchTerm)) {
     <?php if (!empty($searchTerm)): ?>
       <?php if (!empty($studentMeetings)): ?>
         <h3 class="mb-3">Your Scheduled Meetings</h3>
-        
+
         <?php foreach ($studentMeetings as $meeting): ?>
           <div class="card meeting-card">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
                   <h5>Meeting ID: <?= htmlspecialchars($meeting['meeting_id']) ?></h5>
-                   <p class="mb-1"><strong>Registered On:</strong> <?= htmlspecialchars($meeting['details']['timestamp']) ?></p>
+                  <p class="mb-1">
+                    <strong>Meeting Time:</strong> 
+                    <?= htmlspecialchars($meeting['details']['meeting_time']) ?>
+                  </p>
                 </div>
                 <div>
                   <a href="<?= htmlspecialchars($meeting['details']['zoom_link']) ?>" 
@@ -97,6 +112,7 @@ if (!empty($searchTerm)) {
             </div>
           </div>
         <?php endforeach; ?>
+
       <?php else: ?>
         <div class="alert alert-warning">
           <h4>No active meetings found for: <?= htmlspecialchars($searchTerm) ?></h4>

@@ -45,6 +45,23 @@ if ($meetingId) {
   $currentMeetingRegistrations = $registrations[$meetingId] ?? [];
 }
 
+
+// Bulk remove students
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_selected'])) {
+  $meetingId = $_POST['meeting_id'];
+  $selectedStudents = $_POST['selected_students'] ?? [];
+
+  foreach ($selectedStudents as $studentId) {
+    if (isset($registrations[$meetingId][$studentId])) {
+      $removedStudents[$meetingId][$studentId] = $registrations[$meetingId][$studentId];
+      unset($registrations[$meetingId][$studentId]);
+    }
+  }
+
+  file_put_contents($dataFile, json_encode($registrations, JSON_PRETTY_PRINT));
+  file_put_contents($removedFile, json_encode($removedStudents, JSON_PRETTY_PRINT));
+  $_SESSION['message'] = count($selectedStudents) . ' students removed successfully';
+}
 // Handle new registration
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fname'])) {
   $fname = $_POST['fname'];
@@ -57,16 +74,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fname'])) {
   if (str_starts_with($link, 'http')) {
     // Set the timezone to IST
     date_default_timezone_set('Asia/Kolkata');
-
-    // Create timestamp with IST timezone
     $timestamp = date('Y-m-d H:i:s');
 
+    // ✅ Fetch Zoom meeting time using API
+    $meetingDetails = getZoomMeetingDetails($meetingId);
+    $meetingTimeUTC = isset($meetingDetails['start_time']) ? $meetingDetails['start_time'] : null;
+
+    // Convert meeting time from UTC to IST
+    $meetingTimeIST = $meetingTimeUTC 
+      ? (new DateTime($meetingTimeUTC, new DateTimeZone('UTC')))
+          ->setTimezone(new DateTimeZone('Asia/Kolkata'))
+          ->format('Y-m-d H:i:s')
+      : null;
+
     $registrationData = [
-      'timestamp' => $timestamp, // This will now be in IST
+      'timestamp' => $timestamp,
       'full_name' => $fullName,
       'student_id' => $studentId,
       'zoom_link' => $link,
-      'timezone' => 'IST' // Optional: store the timezone for reference
+      'meeting_time' => $meetingTimeIST ?: 'Not available',
+      'timezone' => 'IST'
     ];
 
     if (!isset($registrations[$meetingId])) {
@@ -77,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fname'])) {
     $registrations[$meetingId][$key] = $registrationData;
     file_put_contents($dataFile, json_encode($registrations, JSON_PRETTY_PRINT));
 
-    // Remove from removed list if re-registering
+    // If student was previously removed, unmark them
     if (isset($removedStudents[$meetingId][$key])) {
       unset($removedStudents[$meetingId][$key]);
       file_put_contents($removedFile, json_encode($removedStudents, JSON_PRETTY_PRINT));
@@ -86,6 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fname'])) {
     $currentMeetingRegistrations = $registrations[$meetingId];
   }
 }
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -321,62 +349,104 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fname'])) {
 
     <!-- Registrations List -->
      <!-- Dispaly the registered student list from meeting id starts here -->
-    <?php if ($meetingId): ?>
-      <div class="registration-card card mt-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">
-            <i class="bi bi-list-check"></i> Registered Students
-            <span class="badge bg-primary rounded-pill badge-count ms-2"><?= count($currentMeetingRegistrations) ?></span>
-          </h5>
-          <small class="text-muted">Meeting ID: <?= htmlspecialchars($meetingId) ?></small>
+  <?php if ($meetingId): ?>
+  <div class="registration-card card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        <i class="bi bi-list-check"></i> Registered Students
+        <span class="badge bg-primary rounded-pill badge-count ms-2"><?= count($currentMeetingRegistrations) ?></span>
+      </h5>
+      <small class="text-muted">Meeting ID: <?= htmlspecialchars($meetingId) ?></small>
+    </div>
+    <div class="card-body p-0">
+      <?php if (empty($currentMeetingRegistrations)): ?>
+        <div class="text-center py-4">
+          <i class="bi bi-people fs-1 text-muted"></i>
+          <p class="text-muted mt-2">No registrations yet for this meeting.</p>
         </div>
-        <div class="card-body p-0">
-          <?php if (empty($currentMeetingRegistrations)): ?>
-            <div class="text-center py-4">
-              <i class="bi bi-people fs-1 text-muted"></i>
-              <p class="text-muted mt-2">No registrations yet for this meeting.</p>
-            </div>
-          <?php else: ?>
-            <div class="table-responsive registration-list">
-              <table class="table table-hover mb-0">
-                <thead>
+      <?php else: ?>
+        <form method="post" id="bulkDeleteForm">
+          <input type="hidden" name="meeting_id" value="<?= htmlspecialchars($meetingId) ?>">
+          <div class="table-responsive registration-list">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th width="40px">
+                    <input type="checkbox" id="selectAll" class="form-check-input">
+                  </th>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Registered At</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach ($currentMeetingRegistrations as $id => $registration): ?>
                   <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Registered At</th>
-                    <th>Actions</th>
+                    <td>
+                      <input type="checkbox" name="selected_students[]" value="<?= htmlspecialchars($id) ?>" class="form-check-input student-checkbox">
+                    </td>
+                    <td><code><?= htmlspecialchars($id) ?></code></td>
+                    <td><?= htmlspecialchars($registration['full_name']) ?></td>
+                    <td>
+                      <?php
+                      $date = new DateTime($registration['timestamp'], new DateTimeZone('Asia/Kolkata'));
+                      echo $date->format('d M Y h:i A');
+                      ?>
+                    </td>
+                    <td class="action-buttons">
+                      <form method="post" style="display: inline;">
+                        <input type="hidden" name="meeting_id" value="<?= htmlspecialchars($meetingId) ?>">
+                        <input type="hidden" name="student_key" value="<?= htmlspecialchars($id) ?>">
+                        <button type="submit" name="remove_student" class="btn btn-sm btn-danger"
+                          onclick="return confirm('Are you sure you want to remove this student?')" title="Remove">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </form>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  <?php foreach ($currentMeetingRegistrations as $id => $registration): ?>
-                    <tr>
-                      <td><code><?= htmlspecialchars($id) ?></code></td>
-                      <td><?= htmlspecialchars($registration['full_name']) ?></td>
-                      <td>
-                        <?php
-                        $date = new DateTime($registration['timestamp'], new DateTimeZone('Asia/Kolkata'));
-                        echo $date->format('d M Y h:i A');
-                        ?>
-                      </td>
-                      <td class="action-buttons">
-                        <form method="post" style="display: inline;">
-                          <input type="hidden" name="meeting_id" value="<?= htmlspecialchars($meetingId) ?>">
-                          <input type="hidden" name="student_key" value="<?= htmlspecialchars($id) ?>">
-                          <button type="submit" name="remove_student" class="btn btn-sm btn-danger"
-                            onclick="return confirm('Are you sure you want to remove this student?')" title="Remove">
-                            <i class="bi bi-trash"></i>
-                          </button>
-                        </form>
-                      </td>
-                    </tr>
-                  <?php endforeach; ?>
-                </tbody>
-              </table>
-            </div>
-          <?php endif; ?>
-        </div>
-      </div>
-    <?php endif; ?>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+          <div class="p-3 border-top">
+            <button type="submit" name="remove_selected" class="btn btn-danger" id="deleteSelectedBtn" disabled
+              onclick="return confirm('Are you sure you want to delete the selected students?')">
+              <i class="bi bi-trash"></i> Delete Selected
+            </button>
+          </div>
+        </form>
+        
+        <script>
+          // Select all checkbox functionality
+          document.getElementById('selectAll').addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.student-checkbox');
+            checkboxes.forEach(checkbox => {
+              checkbox.checked = this.checked;
+            });
+            updateDeleteButtonState();
+          });
+          
+          // Update delete button state when individual checkboxes change
+          document.querySelectorAll('.student-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', updateDeleteButtonState);
+          });
+          
+          function updateDeleteButtonState() {
+            const checkedCount = document.querySelectorAll('.student-checkbox:checked').length;
+            const deleteBtn = document.getElementById('deleteSelectedBtn');
+            deleteBtn.disabled = checkedCount === 0;
+            if (checkedCount > 0) {
+              deleteBtn.innerHTML = `<i class="bi bi-trash"></i> Delete Selected (${checkedCount})`;
+            } else {
+              deleteBtn.innerHTML = `<i class="bi bi-trash"></i> Delete Selected`;
+            }
+          }
+        </script>
+      <?php endif; ?>
+    </div>
+  </div>
+<?php endif; ?>
   </div>
  <!-- Dispaly the registered student list from meeting id ends here -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -229,14 +229,19 @@ try {
                                         </a>
 
                                    </td>
-                                    <td>
-                                        <?php echo date('M j, Y g:i A', strtotime($meeting['start_time'])); ?>
-                                        <?php if ($isRecent): ?>
-                                            <span class="badge bg-warning text-dark">Happening Now</span>
-                                        <?php elseif ($isPast): ?>
-                                            <span class="badge bg-secondary">Completed</span>
-                                        <?php endif; ?>
-                                    </td>
+                                   <td>
+    <?php
+        $meetingDateUTC = new DateTime($meeting['start_time'], new DateTimeZone('UTC'));
+        $meetingDateUTC->setTimezone(new DateTimeZone('Asia/Kolkata'));
+        echo $meetingDateUTC->format('M j, Y g:i A');
+    ?>
+    <?php if ($isRecent): ?>
+        <span class="badge bg-warning text-dark">Happening Now</span>
+    <?php elseif ($isPast): ?>
+        <span class="badge bg-secondary">Completed</span>
+    <?php endif; ?>
+</td>
+
                                     <td><?php echo $meeting['duration']; ?> minutes</td>
                                     <td>
                                         <?php 

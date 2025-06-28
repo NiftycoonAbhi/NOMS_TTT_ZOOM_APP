@@ -172,3 +172,26 @@ function saveAttendanceData($meetingId, $participants, $meetingStatus = 'complet
 function getAttendanceData() {
     return json_decode(file_get_contents(ATTENDANCE_FILE), true);
 }
+
+// Add this function to functions.php
+function getMeetingParticipantsForExport($meetingId) {
+    $attendanceData = getAttendanceData();
+    
+    if (!isset($attendanceData['attendees'][$meetingId])) {
+        return false;
+    }
+
+    $participants = [];
+    foreach ($attendanceData['attendees'][$meetingId] as $participant) {
+        $participants[] = [
+            'name' => $participant['name'],
+            'email' => $participant['email'] ?? '',
+            'join_time' => $participant['join_time'],
+            'leave_time' => $participant['leave_time'],
+            'duration' => $participant['duration'],
+            'status' => $participant['status']
+        ];
+    }
+
+    return $participants;
+}

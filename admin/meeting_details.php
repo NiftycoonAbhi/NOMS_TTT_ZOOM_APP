@@ -4,6 +4,7 @@ require_once '../admin/includes/config.php';
 require_once '../admin/includes/functions.php';
 
 
+
 // Define helper functions if not already defined in functions.php
 if (!function_exists('calculateAverageDuration')) {
     function calculateAverageDuration($participants) {
@@ -114,6 +115,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['meeting_id'])) {
         .participant-row:hover { background-color: #f8f9fa; }
         #participantsTable { font-size: 0.9rem; }
         #participantsTable thead th { position: sticky; top: 0; background-color: white; z-index: 10; }
+        .btn-export { background-color: #1d6f42; border-color: #1a633b; }
+        .btn-export:hover { background-color: #1a633b; border-color: #165730; }
     </style>
 </head>
 <body>
@@ -247,6 +250,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['meeting_id'])) {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a href="export_attendance.php?meeting_id=" id="exportExcelBtn" class="btn btn-export text-white">
+                        <i class="fas fa-file-excel me-1"></i> Export to Excel
+                    </a>
                 </div>
             </div>
         </div>
@@ -322,6 +328,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['meeting_id'])) {
         function showParticipants(meetingId) {
             const modal = new bootstrap.Modal(document.getElementById('participantsModal'));
             const tableBody = document.getElementById('participantsTableBody');
+            
+            // Set export button URL
+            document.getElementById('exportExcelBtn').href = `export_attendance.php?meeting_id=${meetingId}`;
             
             // Show loading state
             tableBody.innerHTML = `
