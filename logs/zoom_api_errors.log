@@ -1,0 +1,6 @@
+[2025-07-17 17:20:58] Zoom API ERROR: Zoom API Error (Code 3001) for past_meetings/123456789/participants: Meeting does not exist: 123456789.
+[2025-07-17 17:20:58] Zoom API ERROR: Failed to fetch participants for meeting 123456789: Meeting does not exist: 123456789.
+[2025-07-17 17:27:57] Zoom API ERROR: Zoom API Error (Code 3001) for past_meetings/123456789/participants: Meeting does not exist: 123456789.
+[2025-07-17 17:27:57] Zoom API ERROR: Failed to fetch participants for meeting 123456789: Meeting does not exist: 123456789.
+[2025-07-17 17:37:29] Zoom API ERROR: Zoom API Error (Code 3001) for past_meetings/82035250576/participants: Meeting does not exist: 82035250576.
+[2025-07-17 17:37:29] Zoom API ERROR: Failed to fetch participants for meeting 82035250576: Meeting does not exist: 82035250576.

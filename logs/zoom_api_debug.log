@@ -1,0 +1,276 @@
+[2025-07-15 10:51:28] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-10th-ICSE-24-25-100 Kishan S
+[2025-07-15 10:51:28] Zoom API DEBUG: Generated Email for Zoom: ttt.10th.icse.24.25.100-kishan-s@niftycoon.in
+[2025-07-15 10:51:28] Zoom API DEBUG: Request Body: {"email":"ttt.10th.icse.24.25.100-kishan-s@niftycoon.in","first_name":"Kishan S","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-10th-ICSE-24-25-100 Kishan S"}]}
+[2025-07-15 10:51:28] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => 5tZ4iQSGTJa9yoiCS5UnCw
+    [id] => 81444590900
+    [topic] => TTT test
+    [start_time] => 2025-07-15T05:30:00Z
+    [join_url] => https://us06web.zoom.us/w/81444590900?tk=QaUCqZJp04o6Ce_6qQdW44ZgdMFXevaQzxAiFy2rL5A.DQgAAAAS9nnVNBY1dFo0aVFTR1RKYTl5b2lDUzVVbkN3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=gYMhmSQsmztOhxeQyEQllphDsaNscu.1
+)
+
+[2025-07-15 10:51:49] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-10th-ICSE-24-25-101 Kailash
+[2025-07-15 10:51:49] Zoom API DEBUG: Generated Email for Zoom: ttt.10th.icse.24.25.101-kailash@niftycoon.in
+[2025-07-15 10:51:49] Zoom API DEBUG: Request Body: {"email":"ttt.10th.icse.24.25.101-kailash@niftycoon.in","first_name":"Kailash","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-10th-ICSE-24-25-101 Kailash"}]}
+[2025-07-15 10:51:49] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => j76FnLbRRzyRiv6A_Zoz7Q
+    [id] => 81444590900
+    [topic] => TTT test
+    [start_time] => 2025-07-15T05:30:00Z
+    [join_url] => https://us06web.zoom.us/w/81444590900?tk=SMRxjGR1j3OPH7OW66KPFZ-zzzQELVsRmcplMEvrqcs.DQgAAAAS9nnVNBZqNzZGbkxiUlJ6eVJpdjZBX1pvejdRAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=gYMhmSQsmztOhxeQyEQllphDsaNscu.1
+)
+
+[2025-07-15 10:52:11] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-10th-ICSE-24-25-102 Hiba Syed
+[2025-07-15 10:52:11] Zoom API DEBUG: Generated Email for Zoom: ttt.10th.icse.24.25.102-hiba-syed@niftycoon.in
+[2025-07-15 10:52:11] Zoom API DEBUG: Request Body: {"email":"ttt.10th.icse.24.25.102-hiba-syed@niftycoon.in","first_name":"Hiba Syed","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-10th-ICSE-24-25-102 Hiba Syed"}]}
+[2025-07-15 10:52:11] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => k2q2T00aT9qtK3aPthicUw
+    [id] => 81444590900
+    [topic] => TTT test
+    [start_time] => 2025-07-15T05:30:00Z
+    [join_url] => https://us06web.zoom.us/w/81444590900?tk=bLHjfuMY7GMfKDKoMzZFx16jyEOgfmaSkXveF1sEXIw.DQgAAAAS9nnVNBZrMnEyVDAwYVQ5cXRLM2FQdGhpY1V3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=gYMhmSQsmztOhxeQyEQllphDsaNscu.1
+)
+
+[2025-07-15 10:52:24] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-9th-ICSE-24-25-103 Rohith C
+[2025-07-15 10:52:24] Zoom API DEBUG: Generated Email for Zoom: ttt.9th.icse.24.25.103-rohith-c@niftycoon.in
+[2025-07-15 10:52:24] Zoom API DEBUG: Request Body: {"email":"ttt.9th.icse.24.25.103-rohith-c@niftycoon.in","first_name":"Rohith C","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-9th-ICSE-24-25-103 Rohith C"}]}
+[2025-07-15 10:52:24] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => gwt6lYzvSK25dEH9Bj2E7A
+    [id] => 81444590900
+    [topic] => TTT test
+    [start_time] => 2025-07-15T05:30:00Z
+    [join_url] => https://us06web.zoom.us/w/81444590900?tk=HmRJKbCfxA5x0bMbqiCt3mz8eVj2OcP0NaeH_XtuBhU.DQgAAAAS9nnVNBZnd3Q2bFl6dlNLMjVkRUg5QmoyRTdBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=gYMhmSQsmztOhxeQyEQllphDsaNscu.1
+)
+
+[2025-07-15 10:52:37] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-9th-ICSE-24-25-104 Manjunath
+[2025-07-15 10:52:37] Zoom API DEBUG: Generated Email for Zoom: ttt.9th.icse.24.25.104-manjunath@niftycoon.in
+[2025-07-15 10:52:37] Zoom API DEBUG: Request Body: {"email":"ttt.9th.icse.24.25.104-manjunath@niftycoon.in","first_name":"Manjunath","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-9th-ICSE-24-25-104 Manjunath"}]}
+[2025-07-15 10:52:37] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => Z2-yTfKZROelB4LErsQaiw
+    [id] => 81444590900
+    [topic] => TTT test
+    [start_time] => 2025-07-15T05:30:00Z
+    [join_url] => https://us06web.zoom.us/w/81444590900?tk=dD10ldh-k4ZCglOJTeKK42RzEHVX3Z80fRgXEe6Lm_U.DQgAAAAS9nnVNBZaMi15VGZLWlJPZWxCNExFcnNRYWl3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=gYMhmSQsmztOhxeQyEQllphDsaNscu.1
+)
+
+[2025-07-15 15:39:12] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-10th-ICSE-24-25-100 Kishan S
+[2025-07-15 15:39:12] Zoom API DEBUG: Generated Email for Zoom: ttt.10th.icse.24.25.100-kishan-s@niftycoon.in
+[2025-07-15 15:39:12] Zoom API DEBUG: Request Body: {"email":"ttt.10th.icse.24.25.100-kishan-s@niftycoon.in","first_name":"Kishan S","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-10th-ICSE-24-25-100 Kishan S"}]}
+[2025-07-15 15:39:12] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => LOgxdanER0y_wPS-L377Iw
+    [id] => 87091881770
+    [topic] => Testing_ZOOM
+    [start_time] => 2025-07-15T10:30:00Z
+    [join_url] => https://us06web.zoom.us/w/87091881770?tk=0uBWjnmJUxaTZfyyVfHluPO517Llh57uoff56lK7ueY.DQgAAAAURxSnKhZMT2d4ZGFuRVIweV93UFMtTDM3N0l3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=OeDGXIuodYE1bAIamQvM7If3J1IlBB.1
+)
+
+[2025-07-15 15:39:25] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-10th-ICSE-24-25-102 Hiba Syed
+[2025-07-15 15:39:25] Zoom API DEBUG: Generated Email for Zoom: ttt.10th.icse.24.25.102-hiba-syed@niftycoon.in
+[2025-07-15 15:39:25] Zoom API DEBUG: Request Body: {"email":"ttt.10th.icse.24.25.102-hiba-syed@niftycoon.in","first_name":"Hiba Syed","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-10th-ICSE-24-25-102 Hiba Syed"}]}
+[2025-07-15 15:39:25] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => cXDHuibPRRqWrTW6xd4IZg
+    [id] => 87091881770
+    [topic] => Testing_ZOOM
+    [start_time] => 2025-07-15T10:30:00Z
+    [join_url] => https://us06web.zoom.us/w/87091881770?tk=5BAeHhyFwQXvkhuBAlvHHauIcysUe-0fXehlxjZOZ9k.DQgAAAAURxSnKhZjWERIdWliUFJScVdyVFc2eGQ0SVpnAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=OeDGXIuodYE1bAIamQvM7If3J1IlBB.1
+)
+
+[2025-07-15 16:48:53] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-10th-ICSE-24-25-100 Kishan S
+[2025-07-15 16:48:53] Zoom API DEBUG: Generated Email for Zoom: ttt.10th.icse.24.25.100-kishan-s@niftycoon.in
+[2025-07-15 16:48:53] Zoom API DEBUG: Request Body: {"email":"ttt.10th.icse.24.25.100-kishan-s@niftycoon.in","first_name":"Kishan S","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-10th-ICSE-24-25-100 Kishan S"}]}
+[2025-07-15 16:48:53] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => tGUoieelSJO2p77AjJKMWg
+    [id] => 83552250770
+    [topic] => Test_TTT
+    [start_time] => 2025-07-15T11:30:00Z
+    [join_url] => https://us06web.zoom.us/w/83552250770?tk=Kv6WsqmsDkXzhSBSDSkl9kYFDSzedSkpkvL4mZb-NHc.DQgAAAATdBorkhZ0R1VvaWVlbFNKTzJwNzdBakpLTVdnAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=b7HeTQrK2s92FbEYOQRWWUHTsb5MD5.1
+)
+
+[2025-07-15 16:49:05] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-9th-ICSE-24-25-103 Rohith C
+[2025-07-15 16:49:05] Zoom API DEBUG: Generated Email for Zoom: ttt.9th.icse.24.25.103-rohith-c@niftycoon.in
+[2025-07-15 16:49:05] Zoom API DEBUG: Request Body: {"email":"ttt.9th.icse.24.25.103-rohith-c@niftycoon.in","first_name":"Rohith C","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-9th-ICSE-24-25-103 Rohith C"}]}
+[2025-07-15 16:49:05] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => bjxJToMoRVOS6o96x2fJGg
+    [id] => 83552250770
+    [topic] => Test_TTT
+    [start_time] => 2025-07-15T11:30:00Z
+    [join_url] => https://us06web.zoom.us/w/83552250770?tk=s-3112IHaCXZN_bG3dyvAdSRMvba0eI8HvVqNgfoNzw.DQgAAAATdBorkhZianhKVG9Nb1JWT1M2bzk2eDJmSkdnAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=b7HeTQrK2s92FbEYOQRWWUHTsb5MD5.1
+)
+
+[2025-07-15 21:10:52] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-9th-ICSE-24-25-105 Aryan Kumar
+[2025-07-15 21:10:53] Zoom API DEBUG: Generated Email for Zoom: ttt.9th.icse.24.25.105-aryan-kumar@niftycoon.in
+[2025-07-15 21:10:53] Zoom API DEBUG: Request Body: {"email":"ttt.9th.icse.24.25.105-aryan-kumar@niftycoon.in","first_name":"Aryan Kumar ","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-9th-ICSE-24-25-105 Aryan Kumar"}]}
+[2025-07-15 21:10:53] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => Qnu-NIuyQFCEPyj6MWJsZg
+    [id] => 85424318355
+    [topic] => TTT test
+    [start_time] => 2025-07-15T15:00:00Z
+    [join_url] => https://us06web.zoom.us/w/85424318355?tk=8KaCmH67Upj267zn-BbwPF2Mm9RVfknUvZAaJdZeEI0.DQgAAAAT46-nkxZRbnUtTkl1eVFGQ0VQeWo2TVdKc1pnAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=w7fadVxXuDyRE9FoGMSbaREIVKfdae.1
+)
+
+[2025-07-15 21:11:08] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-10th-ICSE-24-25-106 Tanushree Guggal
+[2025-07-15 21:11:08] Zoom API DEBUG: Generated Email for Zoom: ttt.10th.icse.24.25.106-tanushree-guggal@niftycoon.in
+[2025-07-15 21:11:08] Zoom API DEBUG: Request Body: {"email":"ttt.10th.icse.24.25.106-tanushree-guggal@niftycoon.in","first_name":"Tanushree Guggal","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-10th-ICSE-24-25-106 Tanushree Guggal"}]}
+[2025-07-15 21:11:08] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => mY9_5wzwTLOfizk7IW62Aw
+    [id] => 85424318355
+    [topic] => TTT test
+    [start_time] => 2025-07-15T15:00:00Z
+    [join_url] => https://us06web.zoom.us/w/85424318355?tk=IBmcTFXyrIXkxLBUtOHh8LHkVCkxq0SUnNWHkNusHqo.DQgAAAAT46-nkxZtWTlfNXd6d1RMT2Zpems3SVc2MkF3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=w7fadVxXuDyRE9FoGMSbaREIVKfdae.1
+)
+
+[2025-07-15 22:15:17] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-10th-ICSE-24-25-100 Kishan S
+[2025-07-15 22:15:17] Zoom API DEBUG: Generated Email for Zoom: ttt.10th.icse.24.25.100-kishan-s@niftycoon.in
+[2025-07-15 22:15:17] Zoom API DEBUG: Request Body: {"email":"ttt.10th.icse.24.25.100-kishan-s@niftycoon.in","first_name":"Kishan S","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-10th-ICSE-24-25-100 Kishan S"}]}
+[2025-07-15 22:15:17] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => 1UqCe_gBRIycLFwsKr0ODw
+    [id] => 82115743300
+    [topic] => My Meeting
+    [start_time] => 2025-07-21T17:00:00Z
+    [join_url] => https://us06web.zoom.us/w/82115743300?tk=oFxcay5_Ci4KNOJMvpyDTzl8BqE4L5j_QtQfHJw3KiE.DQgAAAATHnrORBYxVXFDZV9nQlJJeWNMRndzS3IwT0R3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=WWLrjMea4ZtSgsvAWvgGd1lcxnwA0n.1
+)
+
+[2025-07-15 22:15:25] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-10th-ICSE-24-25-101 Kailash
+[2025-07-15 22:15:25] Zoom API DEBUG: Generated Email for Zoom: ttt.10th.icse.24.25.101-kailash@niftycoon.in
+[2025-07-15 22:15:25] Zoom API DEBUG: Request Body: {"email":"ttt.10th.icse.24.25.101-kailash@niftycoon.in","first_name":"Kailash","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-10th-ICSE-24-25-101 Kailash"}]}
+[2025-07-15 22:15:25] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => XyFKSBkYQ12aWhH7wdyABg
+    [id] => 82115743300
+    [topic] => My Meeting
+    [start_time] => 2025-07-21T17:00:00Z
+    [join_url] => https://us06web.zoom.us/w/82115743300?tk=bExgDA1bARomNehPNYuaFFbomZ_GvIScG_Eiuz5YkgI.DQgAAAATHnrORBZYeUZLU0JrWVExMmFXaEg3d2R5QUJnAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=WWLrjMea4ZtSgsvAWvgGd1lcxnwA0n.1
+)
+
+[2025-07-15 22:15:31] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-10th-ICSE-24-25-102 Hiba Syed
+[2025-07-15 22:15:31] Zoom API DEBUG: Generated Email for Zoom: ttt.10th.icse.24.25.102-hiba-syed@niftycoon.in
+[2025-07-15 22:15:31] Zoom API DEBUG: Request Body: {"email":"ttt.10th.icse.24.25.102-hiba-syed@niftycoon.in","first_name":"Hiba Syed","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-10th-ICSE-24-25-102 Hiba Syed"}]}
+[2025-07-15 22:15:31] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => MjCe9QICQmSoCyydHRRNpA
+    [id] => 82115743300
+    [topic] => My Meeting
+    [start_time] => 2025-07-21T17:00:00Z
+    [join_url] => https://us06web.zoom.us/w/82115743300?tk=ia2TcMRhOLpZT3kd1bhGTDBG5eDxj1_kpdDU1M_qP1I.DQgAAAATHnrORBZNakNlOVFJQ1FtU29DeXlkSFJSTnBBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=WWLrjMea4ZtSgsvAWvgGd1lcxnwA0n.1
+)
+
+[2025-07-15 22:15:39] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-9th-ICSE-24-25-103 Rohith C
+[2025-07-15 22:15:39] Zoom API DEBUG: Generated Email for Zoom: ttt.9th.icse.24.25.103-rohith-c@niftycoon.in
+[2025-07-15 22:15:39] Zoom API DEBUG: Request Body: {"email":"ttt.9th.icse.24.25.103-rohith-c@niftycoon.in","first_name":"Rohith C","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-9th-ICSE-24-25-103 Rohith C"}]}
+[2025-07-15 22:15:39] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => bheCF41NQc6qxvTHzGUPew
+    [id] => 82115743300
+    [topic] => My Meeting
+    [start_time] => 2025-07-21T17:00:00Z
+    [join_url] => https://us06web.zoom.us/w/82115743300?tk=IdDs7jmne_rnKWJAT6XCe6XR6KyHi_Dg2FGy-TBUR-c.DQgAAAATHnrORBZiaGVDRjQxTlFjNnF4dlRIekdVUGV3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=WWLrjMea4ZtSgsvAWvgGd1lcxnwA0n.1
+)
+
+[2025-07-15 22:15:47] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-9th-ICSE-24-25-104 Manjunath
+[2025-07-15 22:15:47] Zoom API DEBUG: Generated Email for Zoom: ttt.9th.icse.24.25.104-manjunath@niftycoon.in
+[2025-07-15 22:15:47] Zoom API DEBUG: Request Body: {"email":"ttt.9th.icse.24.25.104-manjunath@niftycoon.in","first_name":"Manjunath","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-9th-ICSE-24-25-104 Manjunath"}]}
+[2025-07-15 22:15:47] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => v3z8GIAoSMGP_s974_P3-Q
+    [id] => 82115743300
+    [topic] => My Meeting
+    [start_time] => 2025-07-21T17:00:00Z
+    [join_url] => https://us06web.zoom.us/w/82115743300?tk=3mCr8NRzwGiOfcZyhA6buPVjAQahS_-cZiqvN50Mjpo.DQgAAAATHnrORBZ2M3o4R0lBb1NNR1Bfczk3NF9QMy1RAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=WWLrjMea4ZtSgsvAWvgGd1lcxnwA0n.1
+)
+
+[2025-07-15 22:15:54] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-9th-ICSE-24-25-105 Aryan Kumar
+[2025-07-15 22:15:54] Zoom API DEBUG: Generated Email for Zoom: ttt.9th.icse.24.25.105-aryan-kumar@niftycoon.in
+[2025-07-15 22:15:54] Zoom API DEBUG: Request Body: {"email":"ttt.9th.icse.24.25.105-aryan-kumar@niftycoon.in","first_name":"Aryan Kumar ","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-9th-ICSE-24-25-105 Aryan Kumar"}]}
+[2025-07-15 22:15:54] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => LkQ1iLk1TAuNlU-z7yA_jw
+    [id] => 82115743300
+    [topic] => My Meeting
+    [start_time] => 2025-07-21T17:00:00Z
+    [join_url] => https://us06web.zoom.us/w/82115743300?tk=wHkwFfROswy_3Hk7vBCThA2TdgJ-p-O0ZP7PwdzQ888.DQgAAAATHnrORBZMa1ExaUxrMVRBdU5sVS16N3lBX2p3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=WWLrjMea4ZtSgsvAWvgGd1lcxnwA0n.1
+)
+
+[2025-07-15 22:16:00] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-10th-ICSE-24-25-106 Tanushree Guggal
+[2025-07-15 22:16:00] Zoom API DEBUG: Generated Email for Zoom: ttt.10th.icse.24.25.106-tanushree-guggal@niftycoon.in
+[2025-07-15 22:16:00] Zoom API DEBUG: Request Body: {"email":"ttt.10th.icse.24.25.106-tanushree-guggal@niftycoon.in","first_name":"Tanushree Guggal","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-10th-ICSE-24-25-106 Tanushree Guggal"}]}
+[2025-07-15 22:16:00] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => dmcwIh0BS2WEv_23j2mLCw
+    [id] => 82115743300
+    [topic] => My Meeting
+    [start_time] => 2025-07-21T17:00:00Z
+    [join_url] => https://us06web.zoom.us/w/82115743300?tk=EanDUHLi2NpHEzFH096y3oY_xHNIWOkq63cBRsRK7bM.DQgAAAATHnrORBZkbWN3SWgwQlMyV0V2XzIzajJtTEN3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=WWLrjMea4ZtSgsvAWvgGd1lcxnwA0n.1
+)
+
+[2025-07-16 10:23:35] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-10th-ICSE-24-25-100 Kishan S
+[2025-07-16 10:23:35] Zoom API DEBUG: Generated Email for Zoom: ttt.10th.icse.24.25.100-kishan-s@niftycoon.in
+[2025-07-16 10:23:35] Zoom API DEBUG: Request Body: {"email":"ttt.10th.icse.24.25.100-kishan-s@niftycoon.in","first_name":"Kishan S","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-10th-ICSE-24-25-100 Kishan S"}]}
+[2025-07-16 10:23:35] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => 1N09sqbmRgGXgw6PZDGMtA
+    [id] => 84404483109
+    [topic] => NOMS_TTT_Test
+    [start_time] => 2025-07-16T05:00:00Z
+    [join_url] => https://us06web.zoom.us/w/84404483109?tk=JSrEia-Yl6-59d2aioywAnAB7rlFYqG6o9uSZ38PUfs.DQgAAAATpuY0JRYxTjA5c3FibVJnR1hndzZQWkRHTXRBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=L2ZEWwsaKzqGdXKNaCvP6RzXuRfzhD.1
+)
+
+[2025-07-16 10:23:44] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-10th-ICSE-24-25-101 Kailash
+[2025-07-16 10:23:44] Zoom API DEBUG: Generated Email for Zoom: ttt.10th.icse.24.25.101-kailash@niftycoon.in
+[2025-07-16 10:23:44] Zoom API DEBUG: Request Body: {"email":"ttt.10th.icse.24.25.101-kailash@niftycoon.in","first_name":"Kailash","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-10th-ICSE-24-25-101 Kailash"}]}
+[2025-07-16 10:23:44] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => RVD_epAkQ36FKQ8ser2xPA
+    [id] => 84404483109
+    [topic] => NOMS_TTT_Test
+    [start_time] => 2025-07-16T05:00:00Z
+    [join_url] => https://us06web.zoom.us/w/84404483109?tk=qIehqgmk9ZeWgtXCWAOy_JrrhS28ktFmN7pnGqfSem0.DQgAAAATpuY0JRZSVkRfZXBBa1EzNkZLUThzZXIyeFBBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=L2ZEWwsaKzqGdXKNaCvP6RzXuRfzhD.1
+)
+
+[2025-07-16 10:23:52] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-10th-ICSE-24-25-102 Hiba Syed
+[2025-07-16 10:23:52] Zoom API DEBUG: Generated Email for Zoom: ttt.10th.icse.24.25.102-hiba-syed@niftycoon.in
+[2025-07-16 10:23:52] Zoom API DEBUG: Request Body: {"email":"ttt.10th.icse.24.25.102-hiba-syed@niftycoon.in","first_name":"Hiba Syed","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-10th-ICSE-24-25-102 Hiba Syed"}]}
+[2025-07-16 10:23:52] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => b_GTrn9MQ--nLas6nmewaQ
+    [id] => 84404483109
+    [topic] => NOMS_TTT_Test
+    [start_time] => 2025-07-16T05:00:00Z
+    [join_url] => https://us06web.zoom.us/w/84404483109?tk=QXrIRCWYtCnq4UQ_srK547mo0g6EQ3WEfpNKPs2eeQk.DQgAAAATpuY0JRZiX0dUcm45TVEtLW5MYXM2bm1ld2FRAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=L2ZEWwsaKzqGdXKNaCvP6RzXuRfzhD.1
+)
+
+[2025-07-16 10:24:00] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-9th-ICSE-24-25-103 Rohith C
+[2025-07-16 10:24:00] Zoom API DEBUG: Generated Email for Zoom: ttt.9th.icse.24.25.103-rohith-c@niftycoon.in
+[2025-07-16 10:24:00] Zoom API DEBUG: Request Body: {"email":"ttt.9th.icse.24.25.103-rohith-c@niftycoon.in","first_name":"Rohith C","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-9th-ICSE-24-25-103 Rohith C"}]}
+[2025-07-16 10:24:00] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => eXnWjfq8ROmdd--CDa3_9Q
+    [id] => 84404483109
+    [topic] => NOMS_TTT_Test
+    [start_time] => 2025-07-16T05:00:00Z
+    [join_url] => https://us06web.zoom.us/w/84404483109?tk=4OdAC9w48CI3TE8TOB5z47RmQRFdZZQJ1POmJu0ryNg.DQgAAAATpuY0JRZlWG5XamZxOFJPbWRkLS1DRGEzXzlRAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=L2ZEWwsaKzqGdXKNaCvP6RzXuRfzhD.1
+)
+
+[2025-07-16 10:24:08] Zoom API DEBUG: Zoom Registration API Call for Student ID: TTT-9th-ICSE-24-25-104 Manjunath
+[2025-07-16 10:24:08] Zoom API DEBUG: Generated Email for Zoom: ttt.9th.icse.24.25.104-manjunath@niftycoon.in
+[2025-07-16 10:24:08] Zoom API DEBUG: Request Body: {"email":"ttt.9th.icse.24.25.104-manjunath@niftycoon.in","first_name":"Manjunath","last_name":"TTT","custom_questions":[{"title":"Student ID","value":"TTT-9th-ICSE-24-25-104 Manjunath"}]}
+[2025-07-16 10:24:08] Zoom API DEBUG: API Response: Array
+(
+    [registrant_id] => LKFBIA0oR7WX_2rBKPepyQ
+    [id] => 84404483109
+    [topic] => NOMS_TTT_Test
+    [start_time] => 2025-07-16T05:00:00Z
+    [join_url] => https://us06web.zoom.us/w/84404483109?tk=XyvY-9o1g9x1x5kEe0PTAMvXyDUcO3pldL5Fwb_4kwc.DQgAAAATpuY0JRZMS0ZCSUEwb1I3V1hfMnJCS1BlcHlRAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=L2ZEWwsaKzqGdXKNaCvP6RzXuRfzhD.1
+)
+

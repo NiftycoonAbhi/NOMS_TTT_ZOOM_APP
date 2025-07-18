@@ -1,0 +1,437 @@
+/*BLINKER*/
+.blink {
+  animation: blink 2s steps(5, start) infinite;
+  -webkit-animation: blink 1s steps(5, start) infinite;
+}
+
+@keyframes blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+@-webkit-keyframes blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+/* PATH STYLE */
+.path_directory {
+  border-bottom: 1px solid grey;
+}
+
+.container .path h6 a {
+  text-decoration: none;
+  color: grey !important;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.container .path h6 {
+  text-decoration: none;
+  color: grey !important;
+  font-weight: normal;
+  font-size: 12px;
+}
+
+/* PATH STYLE END */
+
+/* SEARHC SECTION START */
+.container .fill .search label {
+  text-align: center;
+  font-weight: 600;
+  color: white;
+  font-size: 11px;
+}
+
+.container .fill .search label h6 {
+  text-align: center;
+}
+
+.container .fill .search input {
+  font-size: 13px;
+}
+
+/* SEARHC SECTION END */
+
+/* INPUTS, TEXTAREA, SELECT, SPAN, TIME & DATE, SUBMIT BUTTON STYLE START */
+.container .row .duration h6 b {
+  font-size: 11px;
+  color: grey;
+  font-weight: 600;
+}
+
+.filling_blocks {
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.container .row .input-group span {
+  box-shadow: 0.5px 0.5px 1px 1px #dfdee0;
+  width: 130px;
+  font-weight: 600;
+  background: #fafafa;
+}
+
+.container .row .input-group .non_access {
+  background: #e0fdff;
+}
+
+.container .row .input-group input {
+  box-shadow: 0.5px 0.5px 1px 1px #dfdee0;
+}
+
+.container .row .input-group textarea {
+  box-shadow: 0.5px 0.5px 1px 1px #dfdee0;
+}
+
+.container .row .input-group select {
+  box-shadow: 0.5px 0.5px 1px 1px #dfdee0;
+}
+
+.container .row .subject_Select {
+  min-height: 130px;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ICONS INSIDE THE SPAN LABLE Eg: Click to Whatspp, Phone in master Page */
+.input-group-icon {
+  padding-top: 4px;
+  padding-left: 9px;
+  width: 30px !important;
+  border-bottom-right-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.input-group-icon i {
+  color: green;
+}
+
+/* VIEW IMAGE FACILITY IN INPUT READONLY BLOCK */
+.view_doc {
+  padding: 8px;
+  padding-left: 10px;
+  border-radius: 5px;
+  width: 50%;
+  background: rgb(222, 254, 255);
+}
+
+/* ALIGNMENTS START */
+.keep_start {
+  align-items: left;
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.keep_center {
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.keep_end {
+  align-items: right;
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* ALIGNMENTS END */
+
+/* BUTTONS COLORS & SIZES*/
+/* SMALL SIZE BUTTONS (40PX) */
+.noms_submit_sm {
+  background: linear-gradient(85deg, rgba(53, 111, 191, 1) 49%, rgba(120, 217, 248, 1) 84%);
+  box-shadow: 1px 1px 2px 1px #c8ccc9;
+  color: white;
+  font-weight: bold;
+  width: 40px;
+  height: 35px;
+  font-size: 13px;
+}
+
+.noms_confirm_sm {
+  background: linear-gradient(95deg, rgba(0, 177, 40, 1) 43%, rgba(190, 255, 178, 1) 93%);
+  box-shadow: 1px 1px 2px 1px #c8ccc9;
+  color: white;
+  font-weight: bold;
+  width: 40px;
+  height: 35px;
+  font-size: 13px;
+}
+
+.noms_delete_sm {
+  background: linear-gradient(95deg, rgba(213, 18, 18, 1) 2%, rgba(255, 187, 187, 1) 100%);
+  box-shadow: 1px 1px 2px 1px #c8ccc9;
+  color: white;
+  font-weight: bold;
+  width: 40px;
+  height: 35px;
+  font-size: 13px;
+}
+
+.noms_delete_light_sm {
+  background: #dee3e0;
+  box-shadow: 1px 1px 2px 1px #c8ccc9;
+  color: black;
+  font-weight: bold;
+  width: 40px;
+  height: 35px;
+  font-size: 13px;
+}
+
+/* MEDIUM SIZE BUTTONS (50%) */
+.noms_submit_md {
+  background: linear-gradient(85deg, rgba(53, 111, 191, 1) 49%, rgba(120, 217, 248, 1) 84%);
+  box-shadow: 1px 1px 2px 1px #c8ccc9;
+  color: white;
+  font-weight: bold;
+  width: 49.8%;
+  height: 35px;
+  font-size: 13px;
+}
+
+.noms_confirm_md {
+  background: linear-gradient(95deg, rgba(0, 177, 40, 1) 43%, rgba(190, 255, 178, 1) 93%);
+  box-shadow: 1px 1px 2px 1px #c8ccc9;
+  color: white;
+  font-weight: bold;
+  width: 49.8%;
+  height: 35px;
+  font-size: 13px;
+}
+
+.noms_delete_md {
+  background: linear-gradient(95deg, rgba(213, 18, 18, 1) 2%, rgba(255, 187, 187, 1) 100%);
+  box-shadow: 1px 1px 2px 1px #c8ccc9;
+  color: white;
+  font-weight: bold;
+  width: 49.8%;
+  height: 35px;
+  font-size: 13px;
+}
+
+@media only screen and (max-width: 1400px) {
+  .noms_submit_md {
+    background: linear-gradient(85deg, rgba(53, 111, 191, 1) 49%, rgba(120, 217, 248, 1) 84%);
+    box-shadow: 1px 1px 2px 1px #c8ccc9;
+    color: white;
+    font-weight: bold;
+    width: 49.5%;
+    height: 35px;
+    font-size: 13px;
+  }
+
+  .noms_confirm_md {
+    background: linear-gradient(95deg, rgba(0, 177, 40, 1) 43%, rgba(190, 255, 178, 1) 93%);
+    box-shadow: 1px 1px 2px 1px #c8ccc9;
+    color: white;
+    font-weight: bold;
+    width: 49.5%;
+    height: 35px;
+    font-size: 13px;
+  }
+
+  .noms_delete_md {
+    background: linear-gradient(95deg, rgba(213, 18, 18, 1) 2%, rgba(255, 187, 187, 1) 100%);
+    box-shadow: 1px 1px 2px 1px #c8ccc9;
+    color: white;
+    font-weight: bold;
+    width: 49.5%;
+    height: 35px;
+    font-size: 13px;
+  }
+}
+
+@media only screen and (max-width: 519px) {
+  .noms_submit_md {
+    background: linear-gradient(85deg, rgba(53, 111, 191, 1) 49%, rgba(120, 217, 248, 1) 84%);
+    box-shadow: 1px 1px 2px 1px #c8ccc9;
+    color: white;
+    font-weight: bold;
+    width: 49%;
+    height: 35px;
+    font-size: 13px;
+  }
+
+  .noms_confirm_md {
+    background: linear-gradient(95deg, rgba(0, 177, 40, 1) 43%, rgba(190, 255, 178, 1) 93%);
+    box-shadow: 1px 1px 2px 1px #c8ccc9;
+    color: white;
+    font-weight: bold;
+    width: 49%;
+    height: 35px;
+    font-size: 13px;
+  }
+
+  .noms_delete_md {
+    background: linear-gradient(95deg, rgba(213, 18, 18, 1) 2%, rgba(255, 187, 187, 1) 100%);
+    box-shadow: 1px 1px 2px 1px #c8ccc9;
+    color: white;
+    font-weight: bold;
+    width: 49%;
+    height: 35px;
+    font-size: 13px;
+  }
+}
+
+/* LARGE SIZE BUTTONS (100%) */
+.noms_submit_lg {
+  background: linear-gradient(85deg, rgba(53, 111, 191, 1) 49%, rgba(120, 217, 248, 1) 84%);
+  box-shadow: 1px 1px 2px 1px #c8ccc9;
+  color: white;
+  font-weight: bold;
+  width: 100%;
+  height: 35px;
+  font-size: 13px;
+}
+
+.noms_confirm_lg {
+  background: linear-gradient(95deg, rgba(0, 177, 40, 1) 43%, rgba(190, 255, 178, 1) 93%);
+  box-shadow: 1px 1px 2px 1px #c8ccc9;
+  color: white;
+  font-weight: bold;
+  width: 100%;
+  height: 35px;
+  font-size: 13px;
+}
+
+.noms_delete_lg {
+  background: linear-gradient(95deg, rgba(213, 18, 18, 1) 2%, rgba(255, 187, 187, 1) 100%);
+  box-shadow: 1px 1px 2px 1px #c8ccc9;
+  color: white;
+  font-weight: bold;
+  width: 100%;
+  height: 35px;
+  font-size: 13px;
+}
+
+
+/* UDJUSTS ALL FIELDS IN SMALL DEVICES */
+@media only screen and (max-width: 600px) {
+  .container .row .input-group span {
+    box-shadow: 0.5px 0.5px 1px 1px #a3a2a0;
+    width: 100%;
+    font-weight: 500;
+    border-radius: 0px;
+  }
+
+  .container .row .input-group input {
+    box-shadow: 0.5px 0.5px 1px 1px #a3a2a0;
+    width: 100%;
+    border-radius: 0px;
+  }
+
+  .container .row .input-group textarea {
+    box-shadow: 0.5px 0.5px 1px 1px #a3a2a0;
+    width: 100%;
+    border-radius: 0px;
+  }
+
+  .container .row .input-group select {
+    box-shadow: 0.5px 0.5px 1px 1px #a3a2a0;
+    width: 100%;
+    border-radius: 0px;
+  }
+}
+
+/* INPUTS, TEXTAREA, SELECT, SPAN, TIME & DATE, SUBMIT BUTTON STYLE START */
+
+/* MAIN BOX STYLE START */
+.main_box {
+  box-shadow: 2px 3px 5px 2px #c0c2c4;
+  border-radius: 5px;
+  background: white;
+}
+
+/* MAIN BOX STYLE END */
+
+/* EXPANDING BOX STYLE START */
+.container .expanding_box {
+  box-shadow: 1px 2px 2px 3px #c0c2c4;
+  border-radius: 5px;
+  padding: 15px;
+  background: white;
+}
+
+.container .expanding_box .expand_box_button {
+  margin-top: 10px;
+  background: linear-gradient(to bottom, #ccffff 0%, #ffffff 100%);
+  color: black;
+  box-shadow: none;
+  width: 40px;
+  height: 35px;
+  margin-right: 20px;
+}
+
+/* EXPANDING BOX STYLE END */
+
+/* LOADER STYLE START */
+.loader {
+  height: 100%;
+  top: 0;
+  position: fixed;
+  z-index: 1080;
+  width: 100%;
+  display: none;
+}
+
+.loader .spinner-border {
+  color: red;
+  font-size: 50px;
+  height: 50px;
+  width: 50px;
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.loader h2 {
+  color: darkblue;
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+  font-style: italic;
+}
+
+/* LOADER STYLE END */
+
+
+/* SEARCH WINDOW STYLE START */
+.container .row .search label {
+  text-align: center;
+  font-weight: 600;
+}
+
+.container .row .search label h6 {
+  text-align: center;
+}
+
+.container .row .search input,
+select {
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid black;
+  height: 30px;
+  border-radius: 5px;
+  width: 200px;
+  font-size: 13px;
+}
+
+/* STYLE WINDOW STYLE END */
+
+/* NORMAL FONTS STYLE START */
+.container .row .normal_fonts {
+  font-size: 13px;
+  color: grey;
+  font-weight: 500;
+}
+
+/* NORMAL FONTS STYLE END */
