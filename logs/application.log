@@ -1,0 +1,7 @@
+[2025-07-27 20:35:39] [DEBUG] Main landing page accessed | Context: {"user_ip":"::1","user_agent":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Code\/1.102.2 Chrome\/134.0.6998.205 Electron\/35.6.0 Safari\/537.36"}
+[2025-07-27 21:47:32] [DEBUG] Main landing page accessed | Context: {"user_ip":"::1","user_agent":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/138.0.0.0 Safari\/537.36"}
+[2025-07-28 10:55:09] [DEBUG] Main landing page accessed | Context: {"user_ip":"::1","user_agent":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/138.0.0.0 Safari\/537.36"}
+[2025-07-28 10:55:25] [DEBUG] Main landing page accessed | Context: {"user_ip":"::1","user_agent":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/138.0.0.0 Safari\/537.36"}
+[2025-07-28 10:55:47] [DEBUG] Main landing page accessed | Context: {"user_ip":"::1","user_agent":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/138.0.0.0 Safari\/537.36"}
+[2025-07-28 11:15:28] [DEBUG] Main landing page accessed | Context: {"user_ip":"::1","user_agent":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/138.0.0.0 Safari\/537.36"}
+[2025-07-28 11:35:17] [DEBUG] Main landing page accessed | Context: {"user_ip":"::1","user_agent":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/138.0.0.0 Safari\/537.36"}

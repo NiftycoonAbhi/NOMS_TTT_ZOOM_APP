@@ -1,13 +1,28 @@
 <?php
-session_start();
+// Include multi-account configuration
+require_once 'includes/multi_account_config.php';
+
+// Check if user has selected a Zoom account
+requireZoomAccountSelection('select_zoom_account.php');
+
+// Handle logout and account switching
+if (isset($_POST['logout'])) {
+    logoutUser();
+}
+
+if (isset($_POST['switch_account'])) {
+    header('Location: select_zoom_account.php');
+    exit();
+}
+
 include('../common/php/niftycoon_functions.php');
 // $admin_access = login_permission('12221');
 // if($admin_access == 0){
 //     no_alert_header("../../../admin/login");
 // }
 // if($admin_access != 0){
-require_once __DIR__ . '/../admin/includes/config.php';
-require_once __DIR__ . '/../admin/includes/functions.php';
+require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/functions.php';
 
 header('Content-Type: application/json');
 //   getting the list of the students present in the meeting

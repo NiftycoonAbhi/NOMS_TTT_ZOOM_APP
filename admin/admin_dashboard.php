@@ -16,6 +16,28 @@
 #
 # ******************************************************************************/
 
+// Include multi-account configuration
+require_once 'includes/multi_account_config.php';
+require_once 'includes/zoom_api.php';
+
+// Check if user has selected a Zoom account, redirect if not
+if (!hasSelectedZoomAccount()) {
+    header("Location: select_zoom_account.php");
+    exit();
+}
+
+// Handle account switching
+if (isset($_POST['switch_account'])) {
+    clearCurrentZoomAccount();
+    header("Location: select_zoom_account.php");
+    exit();
+}
+
+// Handle logout
+if (isset($_POST['logout']) || isset($_GET['logout'])) {
+    logoutUser('select_zoom_account.php');
+}
+
 // ===================================================================
 // COMPLETE FLOW:
 // 1. Start session and include required functions
@@ -30,7 +52,6 @@
 // 8. Display meeting details and all occurrences in HTML format
 // 9. Handle errors at each step with appropriate user feedback
 // ===================================================================
-session_start();
 
 date_default_timezone_set('Asia/Kolkata');
 // $admin_access = login_permission('12221');
@@ -38,48 +59,10 @@ date_default_timezone_set('Asia/Kolkata');
 //     no_alert_header("../../../admin/login");
 // }
 // if($admin_access != 0){
-// Zoom API credentials
-define('ZOOM_ACCOUNT_ID', '89NOV9jAT-SH7wJmjvsptg');
-define('ZOOM_CLIENT_ID', '4y5ckqpJQ1WvJAmk3x6PvQ');
-define('ZOOM_CLIENT_SECRET', '8eH7szslJoGeBbyRULvEm6Bx7eE630jB');
-// Function to get Zoom access token
-function getZoomAccessToken()
-{
-    $url = 'https://zoom.us/oauth/token';
-    $headers = [
-        'Authorization: Basic ' . base64_encode(ZOOM_CLIENT_ID . ':' . ZOOM_CLIENT_SECRET),
-        'Content-Type: application/x-www-form-urlencoded'
-    ];
-    $data = [
-        'grant_type' => 'account_credentials',
-        'account_id' => ZOOM_ACCOUNT_ID
-    ];
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    curl_close($ch);
-    return json_decode($response, true);
-}
-// Function to list Zoom meetings
-function listZoomMeetings($access_token, $type = 'upcoming')
-{
-    $url = 'https://api.zoom.us/v2/users/me/meetings?type=' . $type . '&page_size=30';
-    $headers = [
-        'Authorization: Bearer ' . $access_token,
-        'Content-Type: application/json'
-    ];
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    curl_close($ch);
-    return json_decode($response, true);
-}
+
+// Get current Zoom account details
+$current_account = getCurrentZoomAccount();
+$current_account_name = $current_account ? $current_account['name'] : 'No Account Selected';
 // Function to delete a Zoom meeting
 function deleteZoomMeeting($access_token, $meeting_id)
 {
@@ -97,26 +80,6 @@ function deleteZoomMeeting($access_token, $meeting_id)
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
     return $http_code === 204;
-}
-// Function to fetch a Zoom meeting by ID
-function fetchZoomMeeting($meetingId, $access_token)
-{
-    $url = "https://api.zoom.us/v2/meetings/$meetingId";
-    $headers = [
-        "Authorization: Bearer $access_token",
-        "Content-Type: application/json"
-    ];
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $result = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    if ($httpCode != 200) {
-        return null;
-    }
-    return json_decode($result, true);
 }
 // Function to generate all occurrences for a recurring meeting
 function generateAllOccurrences($meeting)
@@ -201,10 +164,10 @@ function generateAllOccurrences($meeting)
 }
 // Handle meeting deletion
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_meeting'])) {
-    $token_data = getZoomAccessToken();
-    if (isset($token_data['access_token'])) {
+    $access_token = getZoomAccessToken();
+    if ($access_token) {
         $meeting_id = $_POST['meeting_id'];
-        $deleted = deleteZoomMeeting($token_data['access_token'], $meeting_id);
+        $deleted = deleteZoomMeeting($access_token, $meeting_id);
         if ($deleted) {
             $success = "Meeting deleted successfully!";
         } else {
@@ -219,9 +182,9 @@ $detailsError = '';
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['id'])) {
     $meetingId = trim($_GET['id']);
     if (!empty($meetingId)) {
-        $token_data = getZoomAccessToken();
-        if (isset($token_data['access_token'])) {
-            $meetingDetails = fetchZoomMeeting($meetingId, $token_data['access_token']);
+        $access_token = getZoomAccessToken();
+        if ($access_token) {
+            $meetingDetails = getZoomMeetingDetails($meetingId);
             if ($meetingDetails) {
                 // For recurring meetings
                 if (($meetingDetails['type'] ?? 0) == 8) {
@@ -294,10 +257,10 @@ $success = '';
 $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'live'; // Default to live meetings
 if (!isset($_GET['id'])) {
     try {
-        $token_data = getZoomAccessToken();
-        if (isset($token_data['access_token'])) {
+        $access_token = getZoomAccessToken();
+        if ($access_token) {
             // Get upcoming meetings
-            $upcoming_data = listZoomMeetings($token_data['access_token'], 'upcoming');
+            $upcoming_data = listZoomMeetings($access_token, 'upcoming');
             if (isset($upcoming_data['meetings'])) {
                 // Group recurring meetings by their series
                 $groupedMeetings = [];
@@ -318,7 +281,7 @@ if (!isset($_GET['id'])) {
             }
 
             // Get past meetings
-            $past_data = listZoomMeetings($token_data['access_token'], 'past');
+            $past_data = listZoomMeetings($access_token, 'past');
             if (isset($past_data['meetings'])) {
                 // Group recurring meetings by their series
                 $groupedPastMeetings = [];
@@ -369,7 +332,7 @@ if (!isset($_GET['id'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <style>
@@ -482,6 +445,26 @@ if (!isset($_GET['id'])) {
 </head>
 
 <body>
+    <!-- Account Switcher Bar -->
+    <div class="bg-primary text-white py-2 px-3 d-flex justify-content-between align-items-center" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000;">
+        <div>
+            <i class="fas fa-building"></i> Current Account: <strong><?= htmlspecialchars($current_account_name) ?></strong>
+        </div>
+        <div class="d-flex gap-2">
+            <form method="POST" style="margin: 0;" class="me-2">
+                <button type="submit" name="switch_account" class="btn btn-light btn-sm">
+                    <i class="fas fa-exchange-alt"></i> Switch Account
+                </button>
+            </form>
+            <form method="POST" style="margin: 0;">
+                <button type="submit" name="logout" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
+    <div style="margin-top: 50px;"></div> <!-- Spacer for fixed header -->
+
     <?php if (isset($_GET['id'])): ?>
         <!-- Meeting Details Page -->
         <div class="container py-4">
@@ -571,6 +554,29 @@ if (!isset($_GET['id'])) {
             <?php endif; ?>
             <!-- Stats Row -->
             <div class="row stats-row mb-4 justify-content-center">
+                <!-- Quick Access: Student Registration -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card stat-card shadow h-100 py-2" style="border-left: 4px solid #28a745;">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Student Registration</div>
+                                    <div class="h6 mb-2 font-weight-bold text-gray-800">
+                                        Quick Access
+                                    </div>
+                                    <a href="../Home/index.php" class="btn btn-success btn-sm">
+                                        <i class="fas fa-user-plus"></i> Register Students
+                                    </a>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-users fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="col-xl-3 col-md-6 mb-4">
                     <div class="card stat-card shadow h-100 py-2">
                         <div class="card-body">
@@ -786,7 +792,7 @@ if (!isset($_GET['id'])) {
                                                 </td>
                                                 <td>
                                                     <!-- Attendance View Button -->
-                                                    <a href="meeting_details?meeting_id=<?php echo $meeting['id']; ?>"
+                                                    <a href="meeting_details.php?meeting_id=<?php echo $meeting['id']; ?>"
                                                         class="btn " title="View Attendance">
                                                         <i class="fas fa-users"></i> View
                                                     </a>
@@ -920,7 +926,7 @@ if (!isset($_GET['id'])) {
                                                 </td>
                                                 <td>
                                                     <!-- Attendance View Button -->
-                                                    <a href="meeting_details?meeting_id=<?php echo $meeting['id']; ?>"
+                                                    <a href="meeting_details.php?meeting_id=<?php echo $meeting['id']; ?>"
                                                         class="btn " title="View Attendance">
                                                         <i class="fas fa-users"></i> View
                                                     </a>
@@ -1046,7 +1052,7 @@ if (!isset($_GET['id'])) {
                                                 </td>
                                                 <td>
                                                     <!-- Attendance View Button -->
-                                                    <a href="meeting_details?meeting_id=<?php echo $meeting['id']; ?>"
+                                                    <a href="meeting_details.php?meeting_id=<?php echo $meeting['id']; ?>"
                                                         class="btn " title="View Attendance">
                                                         <i class="fas fa-users"></i> View
                                                     </a>

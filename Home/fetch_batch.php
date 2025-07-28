@@ -1,6 +1,6 @@
 <?php
-include('../db/dbconn.php');
-include('../../../common/php/niftycoon_functions.php');
+include_once('../db/dbconn.php');
+include_once('../common/php/niftycoon_functions.php');
 if(isset($_POST['text']))
 {
 $text=mysqli_real_escape_string($conn,$_POST['text']);

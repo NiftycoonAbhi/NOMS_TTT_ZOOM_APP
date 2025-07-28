@@ -1,18 +1,3 @@
-<!-- # ******************************************************************************
-# Program: Registering the student to meeting or importing the students to the particular meeting id
-# Author: NifTycoon Company
-# Copyright © [2023] NifTycoon Company. All rights reserved.
-#
-# Description: In this program admin can see the import the students for the particular meeting.
-#
-# This program is the property of NifTycoon Company and is protected by copyright laws.
-# Unauthorized reproduction or distribution of this program, or any portion of it,
-# may result in severe civil and criminal penalties, and will be prosecuted to the
-# maximum extent possible under the law.
-#
-# NifTycoon Company reserves the right to modify this program as needed.
-#
-# ****************************************************************************** -->
 <!doctype html>
 <html lang="en">
 
@@ -22,18 +7,100 @@
   <title>Zoom Student Registration</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-  <script src="../../../common/js/ajax.js"></script>
-  <script src="../../../common/js/common.js"></script>
+  <!-- jQuery for AJAX functionality -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="../common/js/ajax.js"></script>
+  <script src="../common/js/common.js"></script>
 </head>
 
 <body>
   <?php
-  session_start();
+  // Include multi-account configuration (this will start session)
+  require_once '../admin/includes/multi_account_config.php';
+  
+  // Handle quick account selection for testing
+  if (isset($_GET['auto_select'])) {
+      $all_accounts = getAllZoomCredentials();
+      $account_index = intval($_GET['auto_select']) - 1;
+      if (!empty($all_accounts) && isset($all_accounts[$account_index])) {
+          setCurrentZoomAccount($all_accounts[$account_index]['id']);
+          header("Location: index.php" . (isset($_GET['meeting_id']) ? "?meeting_id=" . $_GET['meeting_id'] : ""));
+          exit();
+      }
+  }
+  
+    // Ensure user has selected a Zoom account
+  if (!hasSelectedZoomAccount()) {
+      // For testing purposes, provide quick account selection links
+      ?>
+      <div class="container py-4">
+          <div class="row justify-content-center">
+              <div class="col-md-8">
+                  <div class="card shadow">
+                      <div class="card-header bg-warning text-dark">
+                          <h4 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Institution Selection Required</h4>
+                      </div>
+                      <div class="card-body text-center">
+                          <h5>Welcome to TTT NOMS Zoom Management System</h5>
+                          <p class="mb-4">You need to select your institution before accessing the main dashboard.</p>
+                          <div class="mb-4">
+                              <i class="fas fa-graduation-cap fa-4x text-primary"></i>
+                          </div>
+                          <a href="select_institution.php" class="btn btn-primary btn-lg">
+                              <i class="fas fa-arrow-right me-2"></i>Select Your Institution
+                          </a>
+                          
+                          <!-- Quick access for testing -->
+                          <div class="mt-3">
+                              <small class="text-muted d-block mb-2">Quick Access (Testing):</small>
+                              <div class="btn-group" role="group">
+                                  <a href="?auto_select=1" class="btn btn-outline-secondary btn-sm">TTT Main Account</a>
+                                  <a href="?auto_select=2" class="btn btn-outline-secondary btn-sm">Laggere TTT Branch</a>
+                              </div>
+                          </div>
+                          <hr class="my-4">
+                          <small class="text-muted">
+                              After selecting your institution, you'll be able to:
+                              <ul class="list-unstyled mt-2">
+                                  <li><i class="fas fa-check text-success me-2"></i>Enter meeting IDs</li>
+                                  <li><i class="fas fa-check text-success me-2"></i>Import students to meetings</li>
+                                  <li><i class="fas fa-check text-success me-2"></i>Register individual students</li>
+                                  <li><i class="fas fa-check text-success me-2"></i>View registered participants</li>
+                              </ul>
+                          </small>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+      </body>
+      </html>
+      <?php
+      exit();
+  }
+  
+  // Handle logout and account switching
+  if (isset($_POST['logout'])) {
+      logoutUser('../admin/select_zoom_account.php');
+  }
+  
+  if (isset($_POST['switch_account'])) {
+      clearCurrentZoomAccount();
+      header('Location: select_institution.php');
+      exit();
+  }
+  
+  // At this point, user has selected an account and we can continue
+  
+  // Get current institution details
+  $current_account = getCurrentZoomAccount();
+  $zoom_credentials_id = getCurrentZoomCredentialsId();
+  
   include '../headers/header.php';
-  include('../common/php/niftycoon_functions.php');
-  include('../db/dbconn.php');
-  require '../admin/includes/config.php';
-  require '../admin/includes/zoom_api.php';
+  include_once('../common/php/niftycoon_functions.php');
+  include_once('../db/dbconn.php');
+  require_once '../admin/includes/config.php';
+  require_once '../admin/includes/zoom_api.php';
 
   // $admin_access = login_permission('12221');
   // if($admin_access == 0){
@@ -46,10 +113,8 @@
     if (empty($zoomDetails)) {
       alert_header("!! Sorry We Are Not Able To Find Meeting. Please Enter Valid Zoom Meeting ID !!", 'index');
     }
-    // echo '<pre>' . htmlspecialchars(json_encode($zoomDetails, JSON_PRETTY_PRINT)) . '</pre>';
 
-    // This is used to dispaly zoom in IFRAME below link is dummy use the proper link
-    // echo embedZoomMeeting('https://us06web.zoom.us/w/81041662397?tk=5XiA6bYGuYWi0QUaWgdxPJmc_SQl_dSemMavPLcmm0I.DQgAAAAS3nWhvRY3UTVPZHhUaFJmeUlGaTdCbTBHRnBBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&pwd=Jawo8AkOw5d6cpUYXi6XBpZ0Gaaabu.1');
+    // Display zoom meeting in IFRAME
   } else {
     $meeting_id = '';
   }
@@ -95,109 +160,194 @@
     }
   }
 
-  // Handle new registration
+  // Handle new registration (optimized individual registration)
   if (isset($_POST['register'])) {
     if (prevent_double_submit(1)) {
       $studentId = isset($_POST['student_id']) ? trim($_POST['student_id']) : '';
+      
+      // Quick validation
+      if (empty($studentId)) {
+        alert_header("Student ID is required", "index?meeting_id=$meeting_id");
+      }
+      
       $is_exist = NifTycoon_Select_Data("student_details", "student_id = '$studentId' and status = 1", "", "id", "desc", 1, $conn)[0];
 
       if ($is_exist != null) {
         $course = $is_exist['course'];
         $branch = $is_exist['branch'];
-        $course = $is_exist['course'];
         $batch = $is_exist['batch'];
         $name = $is_exist['student_name'];
-      } else {
-        alert_header("!!! Student Not Found !!!", "index?meeting_id=$meeting_id");
-      }
-      $is_exist_meet = NifTycoon_Get_Count('zoom', "meeting_id = '$meeting_id' and student_id = '$studentId'", $conn);
-      if ($is_exist_meet == 0) {
-        $link = registerStudent($meeting_id, $name, 'TTT', $studentId);
-        if (str_starts_with($link, 'http')) {
-          $insert_array = array(
+        
+        // Check if already registered (quick check)
+        $is_exist_meet = NifTycoon_Get_Count('zoom', "meeting_id = '$meeting_id' and student_id = '$studentId'", $conn);
+        if ($is_exist_meet == 0) {
+          // Use optimized registration for individual student
+          $single_student = array(array(
             'student_id' => $studentId,
-            'meeting_id' => $meeting_id,
-            'branch' => $branch,
-            'course' => $course,
-            'batch' => $batch,
-            'link' => $link,
-            'updated_on' => get_date_time(),
-            'updated_by' => 'NeedToUpdate',
-          );
+            'name' => $name
+          ));
+          
+          $bulk_results = registerStudentsBulk($meeting_id, $single_student);
+          
+          if ($bulk_results['success_count'] > 0) {
+            $success = $bulk_results['success_students'][0];
+            $insert_array = array(
+              'student_id' => $studentId,
+              'meeting_id' => $meeting_id,
+              'branch' => $branch,
+              'course' => $course,
+              'batch' => $batch,
+              'link' => $success['join_url'],
+              'updated_by' => 'System Auto Registration',
+            );
 
-          $insert_status = NifTycoon_Insert_Data("zoom", $insert_array, $conn);
+            $insert_status = NifTycoon_Insert_Data("zoom", $insert_array, $conn);
 
-          if ($insert_status) {
-            alert_header("Students Added Sucessfully", "index?meeting_id=$meeting_id");
+            if ($insert_status) {
+              alert_header("Student Added Successfully", "index?meeting_id=$meeting_id");
+            } else {
+              alert_header("!! Please Contact Developer !!", "developer?error=ZoomApiSuccessButFailedToAddDb");
+            }
           } else {
-            alert_header("!! Please Contact Developer !!", "developer?error=ZoomApiSuccessButFailedToAddDb");
+            $error_msg = !empty($bulk_results['errors']) ? $bulk_results['errors'][0] : 'Registration failed';
+            alert_header("$error_msg - !! Error Student Not Added !! May be Wrong Meeting ID or due to Repeated Try...! Please Try after 12 hr", "index?meeting_id=$meeting_id");
           }
         } else {
-          alert_header("$link - !! Error Student Not Added !! May be Wrong Meeting ID or due to Repeated Try...! Please Try after 12 hr", "index?meeting_id=$meeting_id");
+          alert_header("Student is already registered for this meeting", "index?meeting_id=$meeting_id");
         }
+      } else {
+        alert_header("!!! Student Not Found !!!", "index?meeting_id=$meeting_id");
       }
     }
   }
 
   if (isset($_POST['register_bulk'])) {
     if (prevent_double_submit(1)) {
-      $branch = $_POST['branch'];
+      $batch = $_POST['batch'];
       $course = isset($_POST['course']) ? $_POST['course'] : '';
-      $batch = isset($_POST['batch']) ? $_POST['batch'] : '';
-      $insert_status = 1;
+      $branch = isset($_POST['branch']) ? $_POST['branch'] : '';
+      
       if ($meeting_id != '') {
-        if ($branch != '') {
-          $where_cond = "branch = '$branch' and status = 1 and student_id != ''";
+        if ($batch != '') {
+          $where_cond = "batch = '$batch' and status = 1 and student_id != ''";
         } else {
-          alert_header("No Branch Selected", "index?meeting_id=$meeting_id");
+          alert_header("No Batch Selected", "index?meeting_id=$meeting_id");
         }
         if ($course != '') {
           $where_cond = $where_cond . " and course = '$course'";
         }
-        if ($batch != '') {
-          $where_cond = $where_cond . " and batch = '$batch'";
+        if ($branch != '') {
+          $where_cond = $where_cond . " and branch = '$branch'";
         }
 
-        $failed_links = '';
-        $i = 0;
-
+        // OPTIMIZED BULK REGISTRATION PROCESS
+        echo "<script>showLoader('Preparing student list for bulk registration...');</script>";
+        
+        // 1. Get all students at once
         $get_students = NifTycoon_Select_Data("student_details", $where_cond, "", "id", "desc", "", $conn);
-        foreach ($get_students as $fetch_students) {
-          $name = $fetch_students['student_name'];
-          $studentId = $fetch_students['student_id'];
-          $is_exist_meet = NifTycoon_Get_Count('zoom', "meeting_id = '$meeting_id' and student_id = '$studentId'", $conn);
-          if ($is_exist_meet == 0) {
-            $course = $fetch_students['course'];
-            $batch = $fetch_students['batch'];
-            $link = registerStudent($meeting_id, $name, 'TTT', $studentId);
-            if (!str_starts_with($link, 'http')) {
-              $i++;
-              $failed_links = $failed_links . ' ' . $i . ') ' . $studentId;
-            } else {
-              $insert_array = array(
-                'student_id' => $studentId,
+        $total_found = count($get_students);
+        
+        if ($total_found == 0) {
+          alert_header("No students found matching the criteria", "index?meeting_id=$meeting_id");
+        }
+        
+        echo "<script>updateLoaderMessage('Found {$total_found} students. Checking existing registrations...');</script>";
+        
+        // 2. Bulk check existing registrations to avoid duplicates
+        $student_ids = array_column($get_students, 'student_id');
+        $student_ids_str = "'" . implode("','", $student_ids) . "'";
+        $existing_registrations = NifTycoon_Select_Data("zoom", "meeting_id = '$meeting_id' AND student_id IN ($student_ids_str)", "", "student_id", "asc", "", $conn);
+        $existing_student_ids = array_column($existing_registrations, 'student_id');
+        
+        // 3. Filter out already registered students
+        $students_to_register = array();
+        foreach ($get_students as $student) {
+          if (!in_array($student['student_id'], $existing_student_ids)) {
+            $students_to_register[] = array(
+              'student_id' => $student['student_id'],
+              'name' => $student['student_name'],
+              'course' => $student['course'],
+              'batch' => $student['batch'],
+              'branch' => $student['branch']
+            );
+          }
+        }
+        
+        $students_to_register_count = count($students_to_register);
+        $already_registered_count = $total_found - $students_to_register_count;
+        
+        if ($students_to_register_count == 0) {
+          alert_header("All {$total_found} students are already registered for this meeting", "index?meeting_id=$meeting_id");
+        }
+        
+        echo "<script>updateLoaderMessage('Registering {$students_to_register_count} new students with Zoom API...');</script>";
+        
+        // 4. Use optimized bulk registration
+        $bulk_results = registerStudentsBulk($meeting_id, $students_to_register);
+        
+        echo "<script>updateLoaderMessage('Processing database updates...');</script>";
+        
+        // 5. Batch database inserts for successful registrations
+        if ($bulk_results['success_count'] > 0) {
+          $insert_data = array();
+          foreach ($bulk_results['success_students'] as $success) {
+            // Find the student details
+            $student_info = null;
+            foreach ($students_to_register as $student) {
+              if ($student['student_id'] === $success['student_id']) {
+                $student_info = $student;
+                break;
+              }
+            }
+            
+            if ($student_info) {
+              $insert_data[] = array(
+                'student_id' => $success['student_id'],
                 'meeting_id' => $meeting_id,
-                'branch' => $branch,
-                'course' => $course,
-                'batch' => $batch,
-                'link' => $link,
-                'updated_on' => get_date_time(),
-                'updated_by' => 'NeedToUpdate',
+                'branch' => $student_info['branch'],
+                'course' => $student_info['course'],
+                'batch' => $student_info['batch'],
+                'link' => $success['join_url'],
+                'updated_by' => 'System Optimized Bulk Registration',
               );
-
-              $insert_status = NifTycoon_Insert_Data("zoom", $insert_array, $conn);
+            }
+          }
+          
+          // Batch insert for better performance
+          if (!empty($insert_data)) {
+            foreach ($insert_data as $insert_array) {
+              NifTycoon_Insert_Data("zoom", $insert_array, $conn);
             }
           }
         }
-
-        if ($failed_links == '') {
-          if ($insert_status) {
-            alert_header("Students Added Sucessfully", "index?meeting_id=$meeting_id");
+        
+        // 6. Generate comprehensive success/error message
+        $message_parts = array();
+        
+        if ($bulk_results['success_count'] > 0) {
+          $message_parts[] = "✅ {$bulk_results['success_count']} students registered successfully";
+        }
+        
+        if ($already_registered_count > 0) {
+          $message_parts[] = "ℹ {$already_registered_count} students were already registered";
+        }
+        
+        if ($bulk_results['error_count'] > 0) {
+          $error_summary = array_slice($bulk_results['errors'], 0, 5); // Show first 5 errors
+          $message_parts[] = "❌ {$bulk_results['error_count']} students failed to register";
+          if (count($bulk_results['errors']) > 5) {
+            $message_parts[] = "First 5 errors: " . implode("; ", $error_summary) . "...";
           } else {
-            alert_header("!! Please Contact Developer !!", "developer?error=ZoomApiSuccessButFailedToAddDb");
+            $message_parts[] = "Errors: " . implode("; ", $error_summary);
           }
+        }
+        
+        $final_message = implode(" | ", $message_parts);
+        
+        if ($bulk_results['error_count'] == 0) {
+          alert_header($final_message, "index?meeting_id=$meeting_id");
         } else {
-          alert_header("$link - !! Warning !! Some Students Not Added - $failed_links", "index?meeting_id=$meeting_id");
+          alert_header($final_message, "index?meeting_id=$meeting_id");
         }
       } else {
         alert_header("!! Meeting Id Not Found !!", "index?meeting_id=$meeting_id");
@@ -208,7 +358,9 @@
   // Prevent multiple subbmission
   $form_token = prevent_double_submit(0);
 
-  // if($admin_access != 0){
+  // Show main registration interface (removed admin access check for now)
+  $show_interface = true;
+  if($show_interface) {
   ?>
   <!-- LOADER START -->
   <div class="loader text-center bg-white fixed-top" id="show_msg_div">
@@ -231,9 +383,48 @@
             placeholder="Enter Meeting ID (e.g. 87185382135)" value="<?= htmlspecialchars($meeting_id) ?>" required>
           <button type="button" class="btn btn-primary" onclick="update_link_meeting_id()">Load</button>
         </div>
+        <?php if ($meeting_id == ''): ?>
+        <div class="alert alert-info mt-3">
+          <h6><i class="bi bi-info-circle"></i> Getting Started</h6>
+          <p class="mb-2">To register students for a meeting, please:</p>
+          <ol class="mb-2">
+            <li><strong>Enter a Meeting ID</strong> in the field above</li>
+            <li><strong>Click "Load"</strong> to access registration options</li>
+            <li><strong>Choose your method:</strong> Bulk import or individual registration</li>
+          </ol>
+          <small class="text-muted">
+            <strong>Need a Meeting ID?</strong> 
+            <a href="https://zoom.us/meeting/schedule" target="_blank" class="link-primary">Create a new Zoom meeting</a> 
+            or get the ID from an existing meeting.
+          </small>
+        </div>
+        
+        <!-- Preview of available features -->
+        <div class="row mt-4">
+          <div class="col-md-6">
+            <div class="card border-primary">
+              <div class="card-body text-center">
+                <i class="bi bi-people-fill text-primary" style="font-size: 2rem;"></i>
+                <h6 class="mt-2">Bulk Import Students</h6>
+                <p class="text-muted small">Import multiple students by selecting batch, course, and branch</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card border-success">
+              <div class="card-body text-center">
+                <i class="bi bi-person-plus-fill text-success" style="font-size: 2rem;"></i>
+                <h6 class="mt-2">Individual Registration</h6>
+                <p class="text-muted small">Register single students using their Student ID</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <?php endif; ?>
       </div>
     </div>
     <?php
+    // Show forms only if meeting_id is provided
     if ($meeting_id != '') {
     ?>
       <!-- Forms Container -->
@@ -249,26 +440,28 @@
               <form method="POST" onsubmit="show_msg('Processing your request')">
                 <input type="hidden" name="form_token" value="<?= $form_token ?>">
                 <input type="hidden" name="meeting_id" value="<?= $meeting_id ?>">
-                <!-- Branch Dropdown -->
+                
+                <!-- Branch Dropdown (First) -->
                 <div class="mb-3">
                   <label for="branch" class="form-label">Select Branch</label>
-                  <select name="branch" id="branch" class="form-select" required onchange="get_courses(this.value)">
+                  <select name="branch" id="branch" class="form-select" required onchange="get_courses_by_branch(this.value)">
                     <option value="">-- Select Branch --</option>
                     <?php
-                    $get_branch = NifTycoon_Select_Data("branch_details", "", "", "id", "asc", "", $conn);
-                    foreach ($get_branch as $fetch_branch) {
-                      $branch = $fetch_branch['branch_code'];
-                      echo "<option value='$branch'>$branch</option>";
+                    $get_branches = NifTycoon_Select_Data("branch_details", "", "", "id", "asc", "", $conn);
+                    foreach ($get_branches as $fetch_branch) {
+                      $branch_code = $fetch_branch['branch_code'];
+                      $branch_name = $fetch_branch['branch_name'];
+                      echo "<option value='$branch_code'>$branch_code - $branch_name</option>";
                     }
                     ?>
                   </select>
                 </div>
 
-                <!-- Course Dropdown -->
+                <!-- Course Dropdown (Second) -->
                 <div class="mb-3" id="select_courses"></div>
 
-                <!-- Batch Dropdown -->
-                <div class="mb-3" id="select_batchs"></div>
+                <!-- Batch Dropdown (Third) -->
+                <div class="mb-3" id="select_batches"></div>
 
                 <!-- Submit Button -->
                 <div class="d-grid">
@@ -301,9 +494,10 @@
                 </div>
                 <input type="hidden" name="meeting_id" value="<?= htmlspecialchars($meeting_id) ?>">
                 <div class="col-12">
-                  <button type="submit" class="btn btn-primary w-100" name="register" onclick="return confirmation('Are you sure..! Filled data is correct..?')">
+                  <button type="submit" class="btn btn-primary w-100" name="register" onclick="console.log('Registration button clicked'); return confirmation('Are you sure..! Filled data is correct..?')">
                     <i class="bi bi-save"></i> Register Student
                   </button>
+                  <small class="text-muted mt-2 d-block">💡 Tip: Check browser console (F12) for any error messages</small>
                 </div>
               </form>
             </div>
@@ -564,6 +758,49 @@
     window.location = "index?meeting_id=" + meeting_id;
   }
 
+  function show_msg(message) {
+    document.getElementById('msg').innerText = message;
+    document.getElementById('show_msg_div').style.display = 'block';
+    return true; // Allow form submission to continue
+  }
+
+  function hide_msg() {
+    document.getElementById('show_msg_div').style.display = 'none';
+  }
+
+  // Enhanced loader functions for bulk registration
+  function showLoader(message) {
+    document.getElementById('msg').innerText = message || 'Processing...';
+    document.getElementById('show_msg_div').style.display = 'block';
+    
+    // Add progress animation
+    const spinner = document.querySelector('.spinner-border');
+    if (spinner) {
+      spinner.style.animation = 'spin 1s linear infinite';
+    }
+  }
+
+  function updateLoaderMessage(message) {
+    const msgElement = document.getElementById('msg');
+    if (msgElement) {
+      msgElement.innerText = message;
+      
+      // Add a subtle fade effect
+      msgElement.style.opacity = '0.7';
+      setTimeout(() => {
+        msgElement.style.opacity = '1';
+      }, 200);
+    }
+  }
+
+  function hideLoader() {
+    document.getElementById('show_msg_div').style.display = 'none';
+  }
+
+  function confirmation(message) {
+    return confirm(message);
+  }
+
   function get_batches(course) {
     $.ajax({
       type: 'POST',
@@ -578,15 +815,50 @@
     })
   }
 
-  function get_courses(course) {
+  function get_courses_by_branch(branch) {
+    // Clear dependent dropdowns first
+    $('#select_courses').html('');
+    $('#select_batches').html('');
+    
+    if (branch === '') {
+      return;
+    }
+    
     $.ajax({
       type: 'POST',
-      url: 'fetch_course.php',
+      url: 'fetch_course_by_branch.php',
       data: {
-        text: course
+        branch: branch
       },
       success: function(data) {
         $('#select_courses').html(data);
+      },
+      error: function() {
+        $('#select_courses').html('<div class="alert alert-danger">Error loading courses</div>');
+      }
+    })
+  }
+
+  function get_batches_by_course(course, branch) {
+    // Clear batches dropdown first
+    $('#select_batches').html('');
+    
+    if (course === '' || branch === '') {
+      return;
+    }
+    
+    $.ajax({
+      type: 'POST',
+      url: 'fetch_batch_by_course.php',
+      data: {
+        course: course,
+        branch: branch
+      },
+      success: function(data) {
+        $('#select_batches').html(data);
+      },
+      error: function() {
+        $('#select_batches').html('<div class="alert alert-danger">Error loading batches</div>');
       }
     })
   }
@@ -616,20 +888,72 @@
     }
   }
 
-  function update_branch_link(branch) {
-    window.location = "index?meeting_id=<?= $meeting_id ?>&branch_filter=" + branch;
+  function update_batch_link(batch) {
+    window.location = "index?meeting_id=<?= $meeting_id ?>&batch_filter=" + batch;
   }
 
   function update_course_link(course) {
-    window.location = "index?meeting_id=<?= $meeting_id ?>&branch_filter=<?= $branch_filter ?>&course_filter=" + course;
+    window.location = "index?meeting_id=<?= $meeting_id ?>&batch_filter=<?= $batch_filter ?>&course_filter=" + course;
   }
 
-  function update_batch_link(batch) {
-    window.location = "index?meeting_id=<?= $meeting_id ?>&branch_filter=<?= $branch_filter ?>&course_filter=<?= $course_filter ?>&batch_filter=" + batch;
+  function update_branch_link(branch) {
+    window.location = "index?meeting_id=<?= $meeting_id ?>&batch_filter=<?= $batch_filter ?>&course_filter=<?= $course_filter ?>&branch_filter=" + branch;
   }
+
+  // Enhanced bulk registration form handler
+  document.addEventListener('DOMContentLoaded', function() {
+    const bulkForm = document.querySelector('form[action*="register_bulk"]');
+    if (bulkForm) {
+      bulkForm.addEventListener('submit', function(e) {
+        const branch = document.querySelector('select[name="branch"]')?.value || '';
+        const course = document.querySelector('select[name="course"]')?.value || '';
+        const batch = document.querySelector('select[name="batch"]')?.value || '';
+        
+        if (!batch) {
+          alert('Please select a batch before proceeding with bulk registration.');
+          e.preventDefault();
+          return false;
+        }
+        
+        const confirmMessage = `Are you sure you want to register all students from:\n` +
+                             `Branch: ${branch || 'All'}\n` +
+                             `Course: ${course || 'All'}\n` +
+                             `Batch: ${batch}\n\n` +
+                             `This may take a few moments for large batches.`;
+        
+        if (!confirm(confirmMessage)) {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Show enhanced loader with progress message
+        showLoader('Initializing bulk registration process...');
+        
+        // Allow form to submit
+        return true;
+      });
+    }
+    
+    // Enhanced individual registration form handler
+    const singleForm = document.querySelector('form[action*="register"]');
+    if (singleForm && !singleForm.querySelector('input[name="register_bulk"]')) {
+      singleForm.addEventListener('submit', function(e) {
+        const studentId = document.querySelector('input[name="student_id"]')?.value.trim();
+        
+        if (!studentId) {
+          alert('Please enter a Student ID.');
+          e.preventDefault();
+          return false;
+        }
+        
+        showLoader('Registering student ' + studentId + '...');
+        return true;
+      });
+    }
+  });
 </script>
 <?php
-  // }
+  } // End of show_interface check
 ?>
 </body>
 

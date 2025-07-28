@@ -1,20 +1,40 @@
 <?php
-// Ensure error logging is enabled for development/debugging
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// Include application configuration for consistent error handling
+require_once __DIR__ . '/../../config.php';
 
 // Set default timezone for all DateTime operations to prevent warnings
-date_default_timezone_set('Asia/Kolkata');
+if (isDebugMode()) {
+    date_default_timezone_set('Asia/Kolkata');
+}
 
-// --- Configuration for Zoom API Credentials ---
-// IMPORTANT: Replace with your actual Zoom App credentials.
-// For security, ideally store these in environment variables or a secure config file outside web root.
-// For this example, we'll define them here for clarity.
-$zoom_account_id = '89NOV9jAT-SH7wJmjvsptg'; // Replace with your Zoom Account ID
-$zoom_client_id = '4y5ckqpJQ1WvJAmk3x6PvQ';  // Replace with your Zoom Client ID
-$zoom_client_secret = '8eH7szslJoGeBbyRULvEm6Bx7eE630jB'; // Replace with your Zoom Client Secret
-// --- End Configuration ---
+// Include multi-account configuration
+require_once __DIR__ . '/multi_account_config.php';
+
+/**
+ * TTT NOMS Zoom API Integration
+ * 
+ * RECURRING MEETING SUPPORT:
+ * This API implementation fully supports both regular meetings (type 2) and recurring meetings (type 8).
+ * 
+ * Key Features:
+ * - Automatic detection of meeting type (regular vs recurring)
+ * - Occurrence-specific registration for recurring meetings
+ * - Automatic occurrence selection (next future occurrence for registration, most recent ended for participants)
+ * - Consistent behavior across all functions (register, remove, get registrants, get participants)
+ * 
+ * Functions with Recurring Meeting Support:
+ * - registerStudent(): Automatically detects recurring meetings and registers for next occurrence
+ * - removeZoomRegistrant(): Removes from the same occurrence used for registration
+ * - getMeetingRegistrants(): Gets registrants for specific occurrence (auto-detects if not specified)
+ * - getMeetingParticipants(): Gets participants from most recent ended occurrence (auto-detects if not specified)
+ * - getZoomMeetingDetails(): Returns full meeting details including occurrences for recurring meetings
+ * 
+ * Zoom Meeting Types:
+ * - Type 1: Instant Meeting
+ * - Type 2: Scheduled Meeting (regular)
+ * - Type 3: Recurring Meeting with no fixed time
+ * - Type 8: Recurring Meeting with fixed time (main type we support)
+ */
 
 /**
  * Function to log errors for debugging within this file
@@ -37,11 +57,17 @@ function log_zoom_api_error($message, $level = 'error', $log_file = null) {
  * @return string|null The access token on success, or null on failure.
  */
 function getZoomAccessToken() {
-    global $zoom_account_id, $zoom_client_id, $zoom_client_secret;
-
-    $account_id = defined('ZOOM_ACCOUNT_ID') ? ZOOM_ACCOUNT_ID : $zoom_account_id;
-    $client_id = defined('ZOOM_CLIENT_ID') ? ZOOM_CLIENT_ID : $zoom_client_id;
-    $client_secret = defined('ZOOM_CLIENT_SECRET') ? ZOOM_CLIENT_SECRET : $zoom_client_secret;
+    // Get current zoom credentials from session
+    $credentials = getZoomApiCredentials();
+    
+    if (!$credentials) {
+        log_zoom_api_error("No Zoom account selected. Please select a Zoom account first.");
+        return null;
+    }
+    
+    $account_id = $credentials['account_id'];
+    $client_id = $credentials['client_id'];
+    $client_secret = $credentials['client_secret'];
 
     $url = "https://zoom.us/oauth/token?grant_type=account_credentials&account_id=" . urlencode($account_id);
 
@@ -156,16 +182,107 @@ function createMeeting($topic, $start, $duration = 60) {
 
 /**
  * Register Student for a Zoom Meeting.
+ * 
+ * Automatically splits full names into first and last names if needed.
+ * If only firstName is provided and contains spaces, it will be split.
+ * Ensures both first_name and last_name are provided (Zoom API requirement).
  *
- * @param string $meetingId
- * @param string $firstName
- * @param string $lastName
- * @param string $studentId
+ * @param string $meetingId The Zoom meeting ID
+ * @param string $firstName Student's first name or full name (will be split if contains spaces)
+ * @param string $lastName Student's last name (optional - will be auto-generated if empty)
+ * @param string $studentId Student ID for identification and email generation
  * @return string The join URL on success, or an error message.
  */
 function registerStudent($meetingId, $firstName, $lastName = '', $studentId = '') {
     $token = getZoomAccessToken();
     if (!$token) return 'Error: Access Token not available.';
+
+    // First, check if this is a recurring meeting
+    $meetingDetails = getZoomMeetingDetails($meetingId);
+    log_zoom_api_error("Meeting details check - Meeting ID: {$meetingId}", 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
+    log_zoom_api_error("Meeting details response: " . print_r($meetingDetails, true), 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
+    
+    if (isset($meetingDetails['error'])) {
+        log_zoom_api_error("Failed to get meeting details: " . $meetingDetails['error'], 'error', __DIR__ . '/../../logs/zoom_api_debug.log');
+        return "Meeting does not exist: {$meetingId}. " . $meetingDetails['error'];
+    }
+
+    // Check if it's a recurring meeting
+    $registrationUrl = "meetings/{$meetingId}/registrants";
+    if (isset($meetingDetails['type']) && $meetingDetails['type'] == 8) {
+        log_zoom_api_error("Detected recurring meeting (type 8)", 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
+        // This is a recurring meeting, we need to find the next occurrence
+        if (isset($meetingDetails['occurrences']) && !empty($meetingDetails['occurrences'])) {
+            log_zoom_api_error("Found " . count($meetingDetails['occurrences']) . " occurrences", 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
+            $currentTime = new DateTime('now', new DateTimeZone('UTC'));
+            $nextOccurrence = null;
+            
+            foreach ($meetingDetails['occurrences'] as $occurrence) {
+                $occurrenceTime = new DateTime($occurrence['start_time'], new DateTimeZone('UTC'));
+                if ($occurrenceTime >= $currentTime) {
+                    $nextOccurrence = $occurrence;
+                    break;
+                }
+            }
+            
+            // If no future occurrence found, use the first one
+            if (!$nextOccurrence && !empty($meetingDetails['occurrences'])) {
+                $nextOccurrence = $meetingDetails['occurrences'][0];
+                log_zoom_api_error("No future occurrence found, using first occurrence", 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
+            }
+            
+            if ($nextOccurrence && isset($nextOccurrence['occurrence_id'])) {
+                $registrationUrl = "meetings/{$meetingId}/registrants?occurrence_id=" . $nextOccurrence['occurrence_id'];
+                log_zoom_api_error("Registering for recurring meeting occurrence: " . $nextOccurrence['occurrence_id'], 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
+            } else {
+                log_zoom_api_error("No valid occurrence found for recurring meeting", 'error', __DIR__ . '/../../logs/zoom_api_debug.log');
+            }
+        } else {
+            log_zoom_api_error("Recurring meeting but no occurrences found", 'error', __DIR__ . '/../../logs/zoom_api_debug.log');
+        }
+    } else {
+        log_zoom_api_error("Regular meeting (type: " . ($meetingDetails['type'] ?? 'unknown') . ")", 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
+    }
+
+    // Use the full student ID combined with name for clear identification
+    // This ensures students appear as "TTT-10th-ICSE-24-25-102 Rajesh Kumar" in Zoom
+    if (!empty($studentId)) {
+        // Extract actual name parts for proper display
+        if (empty($lastName) && !empty($firstName)) {
+            $nameParts = explode(' ', trim($firstName), 2);
+            if (count($nameParts) >= 2) {
+                $actualFirstName = $nameParts[0];
+                $actualLastName = $nameParts[1];
+            } else {
+                $actualFirstName = $nameParts[0];
+                $actualLastName = 'Student';
+            }
+        } else {
+            $actualFirstName = $firstName ?: 'Student';
+            $actualLastName = $lastName ?: 'User';
+        }
+        
+        // Create display name with Student ID + Full Name for maximum clarity
+        $displayFirstName = $studentId . ' ' . $actualFirstName;
+        $displayLastName = $actualLastName;
+    } else {
+        // Fallback to regular name handling if no student ID provided
+        if (empty($lastName) && !empty($firstName)) {
+            $nameParts = explode(' ', trim($firstName), 2);
+            if (count($nameParts) >= 2) {
+                $displayFirstName = $nameParts[0];
+                $displayLastName = $nameParts[1];
+            } else {
+                $displayFirstName = $nameParts[0];
+                $displayLastName = 'Student';
+            }
+        } else {
+            $displayFirstName = $firstName ?: 'Student';
+            $displayLastName = $lastName ?: 'User';
+        }
+        $actualFirstName = $displayFirstName;
+        $actualLastName = $displayLastName;
+    }
 
     // Student ID to Email Transformation Logic
     $transformedId = str_replace('-', '.', $studentId);
@@ -175,26 +292,163 @@ function registerStudent($meetingId, $firstName, $lastName = '', $studentId = ''
 
     $data = [
         "email" => $email,
-        "first_name" => $firstName,
-        "last_name" => $lastName,
+        "first_name" => $displayFirstName,
+        "last_name" => $displayLastName,
         "custom_questions" => [[
             "title" => "Student ID",
             "value" => $studentId ?: 'N/A'
         ]]
     ];
 
-    $response = callZoomApi("meetings/{$meetingId}/registrants", $token, 'POST', $data);
+    $response = callZoomApi($registrationUrl, $token, 'POST', $data);
 
     log_zoom_api_error("Zoom Registration API Call for Student ID: {$studentId}", 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
+    log_zoom_api_error("Meeting Type: " . ($meetingDetails['type'] ?? 'unknown'), 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
+    log_zoom_api_error("Registration URL: {$registrationUrl}", 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
     log_zoom_api_error("Generated Email for Zoom: {$email}", 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
+    log_zoom_api_error("Display Name for Zoom: {$displayFirstName} {$displayLastName}", 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
     log_zoom_api_error("Request Body: " . json_encode($data), 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
     log_zoom_api_error("API Response: " . print_r($response, true), 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
 
     if (!isset($response['error']) && ($response['http_code'] ?? 201) === 201) {
         return $response['join_url'] ?? 'Registration successful, but join_url not found in response.';
     } else {
-        return $response['error'] ?? 'Registration failed.';
+        $errorMsg = $response['error'] ?? 'Registration failed.';
+        return "Meeting does not exist: {$meetingId}. {$errorMsg}";
     }
+}
+
+/**
+ * Optimized bulk registration for multiple students
+ * Caches meeting details to avoid repeated API calls
+ * 
+ * @param string $meetingId The Zoom meeting ID
+ * @param array $students Array of student data [['student_id' => '', 'name' => ''], ...]
+ * @return array Results array with success/error counts and details
+ */
+function registerStudentsBulk($meetingId, $students) {
+    $results = [
+        'success_count' => 0,
+        'error_count' => 0,
+        'errors' => [],
+        'success_students' => [],
+        'cached_meeting_details' => null,
+        'registration_url' => null
+    ];
+    
+    if (empty($students)) {
+        $results['errors'][] = 'No students provided for registration';
+        return $results;
+    }
+    
+    $token = getZoomAccessToken();
+    if (!$token) {
+        $results['errors'][] = 'Error: Access Token not available';
+        return $results;
+    }
+
+    // OPTIMIZATION 1: Cache meeting details - fetch only once for all students
+    $meetingDetails = getZoomMeetingDetails($meetingId);
+    if (isset($meetingDetails['error'])) {
+        $results['errors'][] = "Meeting does not exist: {$meetingId}. " . $meetingDetails['error'];
+        return $results;
+    }
+    
+    $results['cached_meeting_details'] = $meetingDetails;
+    
+    // OPTIMIZATION 2: Pre-calculate registration URL once
+    $registrationUrl = "meetings/{$meetingId}/registrants";
+    if (isset($meetingDetails['type']) && $meetingDetails['type'] == 8) {
+        // Handle recurring meeting - find next occurrence once
+        if (isset($meetingDetails['occurrences']) && !empty($meetingDetails['occurrences'])) {
+            $currentTime = new DateTime('now', new DateTimeZone('UTC'));
+            $nextOccurrence = null;
+            
+            foreach ($meetingDetails['occurrences'] as $occurrence) {
+                $occurrenceTime = new DateTime($occurrence['start_time'], new DateTimeZone('UTC'));
+                if ($occurrenceTime >= $currentTime) {
+                    $nextOccurrence = $occurrence;
+                    break;
+                }
+            }
+            
+            if (!$nextOccurrence && !empty($meetingDetails['occurrences'])) {
+                $nextOccurrence = $meetingDetails['occurrences'][0];
+            }
+            
+            if ($nextOccurrence && isset($nextOccurrence['occurrence_id'])) {
+                $registrationUrl .= "?occurrence_id=" . $nextOccurrence['occurrence_id'];
+            }
+        }
+    }
+    
+    $results['registration_url'] = $registrationUrl;
+    
+    // OPTIMIZATION 3: Process students in batches (reduced logging)
+    $batch_size = 10;
+    $total_students = count($students);
+    
+    log_zoom_api_error("Starting bulk registration for {$total_students} students to meeting {$meetingId}", 'info', __DIR__ . '/../../logs/zoom_api_debug.log');
+    log_zoom_api_error("Using registration URL: {$registrationUrl}", 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
+    
+    foreach (array_chunk($students, $batch_size) as $batch_index => $batch) {
+        $batch_start = $batch_index * $batch_size + 1;
+        $batch_end = min(($batch_index + 1) * $batch_size, $total_students);
+        
+        log_zoom_api_error("Processing batch {$batch_start}-{$batch_end} of {$total_students}", 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
+        
+        foreach ($batch as $student) {
+            $studentId = $student['student_id'] ?? '';
+            $firstName = $student['name'] ?? 'Student';
+            
+            // OPTIMIZATION 4: Simplified name processing
+            $nameParts = explode(' ', trim($firstName), 2);
+            $actualFirstName = $nameParts[0];
+            $actualLastName = isset($nameParts[1]) ? $nameParts[1] : 'Student';
+            
+            // Create display name with Student ID
+            $displayFirstName = $studentId . ' ' . $actualFirstName;
+            $displayLastName = $actualLastName;
+            
+            // OPTIMIZATION 5: Simplified email generation
+            $email = strtolower(str_replace(['-', ' '], ['.', '-'], preg_replace('/[^a-zA-Z0-9.\-\s]/', '', $studentId))) . '@niftycoon.in';
+            
+            $data = [
+                "email" => $email,
+                "first_name" => $displayFirstName,
+                "last_name" => $displayLastName,
+                "custom_questions" => [[
+                    "title" => "Student ID",
+                    "value" => $studentId
+                ]]
+            ];
+            
+            // OPTIMIZATION 6: Single API call per student (no redundant logging)
+            $response = callZoomApi($registrationUrl, $token, 'POST', $data);
+            
+            if (!isset($response['error']) && ($response['http_code'] ?? 201) === 201) {
+                $results['success_count']++;
+                $results['success_students'][] = [
+                    'student_id' => $studentId,
+                    'join_url' => $response['join_url'] ?? '',
+                    'email' => $email
+                ];
+            } else {
+                $results['error_count']++;
+                $errorMsg = $response['error'] ?? 'Registration failed';
+                $results['errors'][] = "Student {$studentId}: {$errorMsg}";
+            }
+        }
+        
+        // OPTIMIZATION 7: Brief pause between batches to avoid rate limits
+        if ($batch_index < count(array_chunk($students, $batch_size)) - 1) {
+            usleep(100000); // 0.1 second pause
+        }
+    }
+    
+    log_zoom_api_error("Bulk registration completed: {$results['success_count']} success, {$results['error_count']} errors", 'info', __DIR__ . '/../../logs/zoom_api_debug.log');
+    
+    return $results;
 }
 
 /**
@@ -208,6 +462,40 @@ function removeZoomRegistrant($meetingId, $studentId) {
     $token = getZoomAccessToken();
     if (!$token) return false;
 
+    // Check if this is a recurring meeting
+    $meetingDetails = getZoomMeetingDetails($meetingId);
+    if (isset($meetingDetails['error'])) {
+        log_zoom_api_error("Failed to get meeting details for removal: " . $meetingDetails['error']);
+        return false;
+    }
+
+    // Check if it's a recurring meeting
+    $cancellationUrl = "meetings/{$meetingId}/registrants/status";
+    if (isset($meetingDetails['type']) && $meetingDetails['type'] == 8) {
+        // This is a recurring meeting, we need to find the next occurrence
+        if (isset($meetingDetails['occurrences']) && !empty($meetingDetails['occurrences'])) {
+            $currentTime = new DateTime('now', new DateTimeZone('UTC'));
+            $nextOccurrence = null;
+            
+            foreach ($meetingDetails['occurrences'] as $occurrence) {
+                $occurrenceTime = new DateTime($occurrence['start_time'], new DateTimeZone('UTC'));
+                if ($occurrenceTime >= $currentTime) {
+                    $nextOccurrence = $occurrence;
+                    break;
+                }
+            }
+            
+            // If no future occurrence found, use the first one
+            if (!$nextOccurrence && !empty($meetingDetails['occurrences'])) {
+                $nextOccurrence = $meetingDetails['occurrences'][0];
+            }
+            
+            if ($nextOccurrence && isset($nextOccurrence['occurrence_id'])) {
+                $cancellationUrl = "meetings/{$meetingId}/registrants/status?occurrence_id=" . $nextOccurrence['occurrence_id'];
+            }
+        }
+    }
+
     // Re-generate the email using the same logic as registration to ensure match
     $transformedId = str_replace('-', '.', $studentId);
     $transformedId = str_replace(' ', '-', $transformedId);
@@ -219,7 +507,7 @@ function removeZoomRegistrant($meetingId, $studentId) {
         "registrants" => [["email" => $email]]
     ];
 
-    $response = callZoomApi("meetings/{$meetingId}/registrants/status", $token, 'PUT', $data);
+    $response = callZoomApi($cancellationUrl, $token, 'PUT', $data);
 
     if (!isset($response['error']) && in_array(($response['http_code'] ?? 204), [200, 204])) {
         return true;
@@ -282,15 +570,51 @@ function listZoomMeetings($access_token, $meeting_type = null) {
 
 /**
  * Get meeting registrants for a specific meeting with pagination.
+ * Supports both regular and recurring meetings.
  *
  * @param string $meetingId
  * @param string $accessToken
+ * @param string|null $occurrenceId Optional occurrence ID for recurring meetings
  * @return array An array of registrants or an empty array on error.
  */
-function getMeetingRegistrants($meetingId, $accessToken) {
+function getMeetingRegistrants($meetingId, $accessToken, $occurrenceId = null) {
     $allRegistrants = [];
     $nextPageToken = '';
     $endpointBase = "meetings/{$meetingId}/registrants?page_size=300";
+    
+    // Add occurrence ID for recurring meetings
+    if ($occurrenceId) {
+        $endpointBase .= "&occurrence_id=" . urlencode($occurrenceId);
+        log_zoom_api_error("Getting registrants for recurring meeting occurrence: {$occurrenceId}", 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
+    } else {
+        // Check if this is a recurring meeting and automatically get next occurrence
+        $meetingDetails = getZoomMeetingDetails($meetingId);
+        if (isset($meetingDetails['type']) && $meetingDetails['type'] == 8) {
+            // This is a recurring meeting, find the next occurrence
+            if (isset($meetingDetails['occurrences']) && !empty($meetingDetails['occurrences'])) {
+                $currentTime = new DateTime('now', new DateTimeZone('UTC'));
+                $nextOccurrence = null;
+                
+                foreach ($meetingDetails['occurrences'] as $occurrence) {
+                    $occurrenceTime = new DateTime($occurrence['start_time'], new DateTimeZone('UTC'));
+                    if ($occurrenceTime >= $currentTime) {
+                        $nextOccurrence = $occurrence;
+                        break;
+                    }
+                }
+                
+                // If no future occurrence found, use the first one
+                if (!$nextOccurrence && !empty($meetingDetails['occurrences'])) {
+                    $nextOccurrence = $meetingDetails['occurrences'][0];
+                }
+                
+                if ($nextOccurrence && isset($nextOccurrence['occurrence_id'])) {
+                    $endpointBase .= "&occurrence_id=" . urlencode($nextOccurrence['occurrence_id']);
+                    log_zoom_api_error("Auto-detected recurring meeting, using occurrence: " . $nextOccurrence['occurrence_id'], 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
+                }
+            }
+        }
+    }
 
     do {
         $endpoint = $endpointBase;
@@ -320,11 +644,13 @@ function getMeetingRegistrants($meetingId, $accessToken) {
 /**
  * Fetches participants for a given meeting ID from the Zoom API.
  * This function uses the `callZoomApi` helper for consistency and robustness.
+ * Supports both regular and recurring meetings.
  *
  * @param string $meeting_id The ID of the meeting to query.
+ * @param string|null $occurrence_id Optional occurrence ID for recurring meetings
  * @return array An array of meeting participants or an empty array on failure.
  */
-function getMeetingParticipants($meeting_id) {
+function getMeetingParticipants($meeting_id, $occurrence_id = null) {
     $zoom_access_token = getZoomAccessToken();
     if (!$zoom_access_token) {
         log_zoom_api_error("Failed to get Zoom Access Token in getMeetingParticipants.");
@@ -333,6 +659,38 @@ function getMeetingParticipants($meeting_id) {
     
     // Zoom API endpoint for past meeting participants.
     $endpoint = "past_meetings/{$meeting_id}/participants";
+    
+    // Add occurrence ID for recurring meetings
+    if ($occurrence_id) {
+        $endpoint .= "?occurrence_id=" . urlencode($occurrence_id);
+        log_zoom_api_error("Getting participants for recurring meeting occurrence: {$occurrence_id}", 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
+    } else {
+        // Check if this is a recurring meeting and get the most recent occurrence
+        $meetingDetails = getZoomMeetingDetails($meeting_id);
+        if (isset($meetingDetails['type']) && $meetingDetails['type'] == 8) {
+            // This is a recurring meeting, find the most recent occurrence that has ended
+            if (isset($meetingDetails['occurrences']) && !empty($meetingDetails['occurrences'])) {
+                $currentTime = new DateTime('now', new DateTimeZone('UTC'));
+                $recentOccurrence = null;
+                
+                // Find the most recent occurrence that has already ended
+                foreach (array_reverse($meetingDetails['occurrences']) as $occurrence) {
+                    $occurrenceEndTime = new DateTime($occurrence['start_time'], new DateTimeZone('UTC'));
+                    $occurrenceEndTime->add(new DateInterval('PT' . ($meetingDetails['duration'] ?? 60) . 'M'));
+                    
+                    if ($occurrenceEndTime <= $currentTime) {
+                        $recentOccurrence = $occurrence;
+                        break;
+                    }
+                }
+                
+                if ($recentOccurrence && isset($recentOccurrence['occurrence_id'])) {
+                    $endpoint .= "?occurrence_id=" . urlencode($recentOccurrence['occurrence_id']);
+                    log_zoom_api_error("Auto-detected recurring meeting, using most recent ended occurrence: " . $recentOccurrence['occurrence_id'], 'debug', __DIR__ . '/../../logs/zoom_api_debug.log');
+                }
+            }
+        }
+    }
 
     $response = callZoomApi($endpoint, $zoom_access_token);
     
@@ -430,7 +788,7 @@ function get_zoom_meetings($studentId) {
 
             if (($found_by_email || $found_by_custom_question) && !isset($unique_meetings_for_student[$meeting_id])) {
                 if (!isset($meetingDetailsCache[$meeting_id])) {
-                    $details = getZoomMeetingDetails($meeting_id, $access_token);
+                    $details = getZoomMeetingDetails($meeting_id);
                     if (isset($details['error'])) {
                         log_zoom_api_error("Failed to get meeting details for ID " . $meeting_id . ": " . $details['error'] . " (Skipping meeting)");
                         continue 2;

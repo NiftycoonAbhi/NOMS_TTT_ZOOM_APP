@@ -1,3 +1,21 @@
+<?php
+// Handle logout and switch account actions
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['logout'])) {
+        // Clear session and redirect to login
+        session_start();
+        session_destroy();
+        header('Location: select_zoom_account.php');
+        exit;
+    } elseif (isset($_POST['switch_account'])) {
+        // Clear current account from session and redirect to account selection
+        session_start();
+        unset($_SESSION['selected_zoom_account']);
+        header('Location: select_zoom_account.php');
+        exit;
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -122,6 +140,48 @@
                 height: 20px;
             }
         }
+        
+        /* Dropdown Menu Styles */
+        .dropdown-menu {
+            background-color: var(--primary-bg);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            margin-top: 0.5rem;
+        }
+        
+        .dropdown-item {
+            color: black !important;
+            padding: 0.75rem 1.25rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none !important;
+            background: none !important;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .dropdown-item:hover, .dropdown-item:focus {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            color: var(--accent-color) !important;
+        }
+        
+        .dropdown-item.text-danger {
+            color: #ff6b6b !important;
+        }
+        
+        .dropdown-item.text-danger:hover {
+            background-color: rgba(255, 107, 107, 0.1) !important;
+            color: #ff5252 !important;
+        }
+        
+        .dropdown-divider {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .dropdown-toggle::after {
+            margin-left: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -150,11 +210,51 @@
                         </a>
                     </li>
                    <li class="nav-item">
-                    <a class="nav-link" href="../home/index">Main Dashboard</a>
+                    <a class="nav-link" href="../Home/index">Main Dashboard</a>
                     </li>
                     <li class="nav-item">
                     <a class="nav-link" href="admin_dashboard">Admin Dashboard</a>
                     </li>
+                </ul>
+                
+                <!-- Right side - Logout Button -->
+                <ul class="navbar-nav ms-auto">
+                    <?php
+                    // Check if multi-account config is available
+                    if (file_exists(__DIR__ . '/../admin/includes/multi_account_config.php')) {
+                        require_once __DIR__ . '/../admin/includes/multi_account_config.php';
+                        $current_account = getCurrentZoomAccount();
+                        if ($current_account): ?>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-building"></i> <?= htmlspecialchars($current_account['name'] ?? 'Account') ?>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <form method="POST" style="margin: 0;">
+                                            <button type="submit" name="switch_account" class="dropdown-item">
+                                                <i class="fas fa-exchange-alt"></i> Switch Account
+                                            </button>
+                                        </form>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="POST" style="margin: 0;">
+                                            <button type="submit" name="logout" class="dropdown-item text-danger">
+                                                <i class="fas fa-sign-out-alt"></i> Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        <?php else: ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="select_zoom_account.php">
+                                    <i class="fas fa-sign-in-alt"></i> Login
+                                </a>
+                            </li>
+                        <?php endif;
+                    } ?>
                 </ul>
             </div>
         </div>
@@ -175,6 +275,55 @@
                     link.classList.add('active');
                 } else {
                     link.classList.remove('active');
+                }
+            });
+            
+            // Handle logout and switch account actions
+            const logoutForms = document.querySelectorAll('form[method="POST"]');
+            logoutForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const submitButton = form.querySelector('button[type="submit"]');
+                    
+                    if (submitButton.name === 'logout') {
+                        if (!confirm('Are you sure you want to logout?')) {
+                            e.preventDefault();
+                            return false;
+                        }
+                        // Redirect to select account page after logout
+                        form.action = 'select_zoom_account.php';
+                    } else if (submitButton.name === 'switch_account') {
+                        // Redirect to select account page for switching
+                        form.action = 'select_zoom_account.php';
+                    }
+                });
+            });
+            
+            // Ensure dropdown works properly
+            const dropdownToggle = document.getElementById('accountDropdown');
+            if (dropdownToggle) {
+                dropdownToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const dropdownMenu = this.nextElementSibling;
+                    const isOpen = dropdownMenu.classList.contains('show');
+                    
+                    // Close all other dropdowns
+                    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                        menu.classList.remove('show');
+                    });
+                    
+                    // Toggle current dropdown
+                    if (!isOpen) {
+                        dropdownMenu.classList.add('show');
+                    }
+                });
+            }
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown')) {
+                    document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                        menu.classList.remove('show');
+                    });
                 }
             });
         });

@@ -37,10 +37,9 @@
 // 28. NifTycoon_convert_amount_in_words_ind
 // 29. unique_code
 // 30. is_exist
-// 31. test
-// 32. prevent_double_submits
-// 33. send_message_fast2sms
-// 34. NifTycoon_copy_table_to_table
+// 31. prevent_double_submits
+// 32. send_message_fast2sms
+// 33. NifTycoon_copy_table_to_table
 
 // Need to add
 // 1. Niftycoon_total_column_join_offset 
@@ -1284,15 +1283,7 @@ function is_exist($table_name, $where_cond, $conn)
 }
 
 
-// 31. Debug function works as a break point in code
-function test()
-{
-  $alert_msg = "Yes code is here";
-  echo "<script>alert('$alert_msg');</script>";
-}
-
-
-// 32. Function to prevent multiple submissions of form 
+// 31. Function to prevent multiple submissions of form 
 // IMP: This Function is mandatory in user side form submissions
 
 // Params : $place // There are two places

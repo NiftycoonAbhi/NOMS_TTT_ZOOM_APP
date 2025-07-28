@@ -30,14 +30,27 @@
 // 9. Handle errors at each step with appropriate user feedback
 // ===================================================================
 
-session_start();
+// Include multi-account configuration
+require_once 'includes/multi_account_config.php';
+
+// Check if user has selected a Zoom account
+requireZoomAccountSelection('select_zoom_account.php');
+
+// Handle logout and account switching
+if (isset($_POST['logout'])) {
+    logoutUser();
+}
+
+if (isset($_POST['switch_account'])) {
+    header('Location: select_zoom_account.php');
+    exit();
+}
+
+// Get current account info for display
+$current_account = getCurrentZoomAccount();
+
 // Include common functions
 include('../common/php/niftycoon_functions.php');
-
-// Define Zoom API credentials
-define('ZOOM_ACCOUNT_ID', '89NOV9jAT-SH7wJmjvsptg');
-define('ZOOM_CLIENT_ID', '4y5ckqpJQ1WvJAmk3x6PvQ');
-define('ZOOM_CLIENT_SECRET', '8eH7szslJoGeBbyRULvEm6Bx7eE630jB');
 
 // Get meeting ID from URL and validate
 $meetingId = isset($_GET['id']) ? trim($_GET['id']) : null;
@@ -45,61 +58,8 @@ if (!$meetingId) {
     die("<div class='alert alert-danger'>Meeting ID is required</div>");
 }
 
-/**
- * Get Zoom API access token using OAuth credentials
- * @return array|false Decoded JSON response with access token or false on failure
- */
-function getZoomAccessToken() {
-    $url = 'https://zoom.us/oauth/token';
-    $headers = [
-        'Authorization: Basic ' . base64_encode(ZOOM_CLIENT_ID . ':' . ZOOM_CLIENT_SECRET),
-        'Content-Type: application/x-www-form-urlencoded'
-    ];
-    $data = [
-        'grant_type' => 'account_credentials',
-        'account_id' => ZOOM_ACCOUNT_ID
-    ];
-    
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    curl_close($ch);
-    
-    return json_decode($response, true);
-}
-
-/**
- * Fetch meeting details from Zoom API
- * @param string $meetingId Zoom meeting ID
- * @param string $access_token Zoom API access token
- * @return array|null Meeting data or null on failure
- */
-function fetchZoomMeeting($meetingId, $access_token) {
-    $url = "https://api.zoom.us/v2/meetings/$meetingId";
-    $headers = [
-        "Authorization: Bearer $access_token",
-        "Content-Type: application/json"
-    ];
-    
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $result = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    
-    // Return null if HTTP status is not 200 (OK)
-    if ($httpCode != 200) {
-        return null;
-    }
-    
-    return json_decode($result, true);
-}
+// Include Zoom API functions
+require_once 'includes/zoom_api.php';
 
 /**
  * Generate all occurrences for a recurring meeting based on recurrence pattern
@@ -206,10 +166,10 @@ $occurrences = [];
 $error = '';
 
 // Get Zoom access token
-$token_data = getZoomAccessToken();
-if (isset($token_data['access_token'])) {
+$access_token = getZoomAccessToken();
+if ($access_token) {
     // Fetch meeting details from Zoom API
-    $meetingData = fetchZoomMeeting($meetingId, $token_data['access_token']);
+    $meetingData = getZoomMeetingDetails($meetingId);
     
     if ($meetingData) {
         // Handle recurring meetings (type 8)
@@ -331,6 +291,27 @@ if (isset($token_data['access_token'])) {
         // Include header
         include __DIR__ . '/../headers/header2.php';
     ?>
+    
+    <!-- Account Header Bar -->
+    <div class="bg-primary text-white py-2 px-3 d-flex justify-content-between align-items-center" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000;">
+        <div>
+            <i class="fas fa-building"></i> Current Account: <strong><?= htmlspecialchars($current_account['name'] ?? 'No Account') ?></strong>
+        </div>
+        <div class="d-flex gap-2">
+            <form method="POST" style="margin: 0;" class="me-2">
+                <button type="submit" name="switch_account" class="btn btn-light btn-sm">
+                    <i class="fas fa-exchange-alt"></i> Switch Account
+                </button>
+            </form>
+            <form method="POST" style="margin: 0;">
+                <button type="submit" name="logout" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
+    <div style="margin-top: 50px;"></div> <!-- Spacer for fixed header -->
+    
     <div class="container"> 
         <h2 class="mb-4"><i class="fas fa-video zoom-icon"></i>Recurring Meeting Details</h2>
         

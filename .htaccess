@@ -1,4 +1,112 @@
-RewriteEngine on
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_FILENAME}\.php -f
-RewriteRule ^(.*)$ $1.php [NC,L]
+# TTT ZOOM Attendance Management System - Apache Configuration
+# Version: 2.0.0
+
+# Enable URL Rewriting
+RewriteEngine On
+
+# Security Headers
+<IfModule mod_headers.c>
+    # Prevent clickjacking
+    Header always append X-Frame-Options SAMEORIGIN
+    
+    # Prevent MIME type sniffing
+    Header always set X-Content-Type-Options nosniff
+    
+    # Enable XSS protection
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Referrer Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Content Security Policy (adjust as needed)
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net cdnjs.cloudflare.com cdn.datatables.net; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com cdn.datatables.net fonts.googleapis.com; img-src 'self' data:; font-src 'self' cdn.jsdelivr.net fonts.gstatic.com cdnjs.cloudflare.com; connect-src 'self';"
+</IfModule>
+
+# Hide sensitive files
+<Files ".env">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+<Files "*.log">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+<Files "*.sql">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Protect configuration files
+<FilesMatch "^(config|\.env|\.git|composer\.(json|lock)|package\.json)">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Prevent access to backup directories
+<IfModule mod_rewrite.c>
+    RewriteRule ^backup_.*$ - [F,L]
+</IfModule>
+
+# PHP Security Settings
+<IfModule mod_php7.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_value max_execution_time 300
+    php_value max_input_time 300
+    php_value memory_limit 256M
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+</IfModule>
+
+# Enable GZIP Compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+</IfModule>
+
+# Cache Static Assets
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/pdf "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
+
+# URL Rewriting Rules
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Specific rules for common paths
+    RewriteRule ^[Hh]ome/index$ Home/index.php [NC,L]
+    RewriteRule ^[Aa]dmin/admin_dashboard$ admin/admin_dashboard.php [NC,L]
+    RewriteRule ^[Ss]tudent/student_dashboard$ student/student_dashboard.php [NC,L]
+    
+    # General rule for other files
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.+)$ $1.php [NC,L]
+</IfModule>
+
+# Error Pages - commented out until error pages are created
+# ErrorDocument 404 /NOMS_TTT_ZOOM_APP/TTT_NOMS_ZOOM/error/404.html
+# ErrorDocument 500 /NOMS_TTT_ZOOM_APP/TTT_NOMS_ZOOM/error/500.html
+
+# Deny access to version control directories
+<IfModule mod_rewrite.c>
+    RewriteRule (^|/)\.git/ - [F,L]
+    RewriteRule (^|/)\.svn/ - [F,L]
+</IfModule>

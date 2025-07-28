@@ -15,6 +15,28 @@
 #
 # ******************************************************************************/
 
+// Include multi-account configuration
+require_once 'includes/multi_account_config.php';
+
+// Check if user has selected a Zoom account, redirect if not
+requireZoomAccountSelection('select_zoom_account.php');
+
+// Get current zoom credentials ID for filtering
+$current_zoom_credentials_id = getCurrentZoomCredentialsId();
+$current_account = getCurrentZoomAccount();
+
+// Handle logout
+if (isset($_POST['logout']) || isset($_GET['logout'])) {
+    logoutUser('select_zoom_account.php');
+}
+
+// Handle account switching
+if (isset($_POST['switch_account'])) {
+    clearCurrentZoomAccount();
+    header("Location: select_zoom_account.php");
+    exit();
+}
+
 // ===================================================================
 // COMPLETE FLOW:
 // 1. Initialize session and set timezone to Asia/Kolkata
@@ -34,8 +56,7 @@
 //    e. Display meeting details and attendance list
 // ===================================================================
 
-session_start();
-// Set default timezone to IST
+// Set default timezone to IST (session already started in multi_account_config.php)
 date_default_timezone_set('Asia/Kolkata');
 $ist_timezone = new DateTimeZone('Asia/Kolkata');
 
@@ -108,9 +129,6 @@ if (isset($_GET['student_id']) && isset($_GET['meeting_id'])) {
             mh.meeting_id
         FROM meeting_att_details mad
         JOIN meeting_att_head mh ON mad.meeting_id = mh.meeting_id 
-            AND mad.start_time >= mh.start_time 
-            AND mad.join_time >= mh.start_time 
-            AND mad.leave_time <= mh.end_time
         WHERE mad.student_id = ? AND mad.meeting_id = ?
         ORDER BY mad.join_time ASC;
     ");
@@ -126,7 +144,16 @@ if (isset($_GET['student_id']) && isset($_GET['meeting_id'])) {
     if ($attendanceResult && $attendanceResult->num_rows > 0) {
         while ($record = $attendanceResult->fetch_assoc()) {
             // Calculate duration of this attendance session
-            $attended_duration = strtotime($record['leave_time']) - strtotime($record['join_time']);
+            $leave_time = $record['leave_time'] ?? $record['end_time']; // Use meeting end time if leave_time is NULL
+            
+            if ($record['join_time'] && $leave_time) {
+                $attended_duration = strtotime($leave_time) - strtotime($record['join_time']);
+                // Ensure duration is not negative
+                $attended_duration = max(0, $attended_duration);
+            } else {
+                $attended_duration = 0;
+            }
+            
             $total_attended_duration += $attended_duration;
             
             // Store record for display
@@ -147,6 +174,26 @@ if (isset($_GET['student_id']) && isset($_GET['meeting_id'])) {
     $overall_attendance_percent = $total_meeting_duration > 0 ?
         ($total_attended_duration / $total_meeting_duration) * 100 : 0;
 ?>
+    <!-- Account Header Bar -->
+    <div class="bg-primary text-white py-2 px-3 d-flex justify-content-between align-items-center" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000;">
+        <div>
+            <i class="fas fa-building"></i> Current Account: <strong><?= htmlspecialchars($current_account['name'] ?? 'No Account') ?></strong>
+        </div>
+        <div class="d-flex gap-2">
+            <form method="POST" style="margin: 0;" class="me-2">
+                <button type="submit" name="switch_account" class="btn btn-light btn-sm">
+                    <i class="fas fa-exchange-alt"></i> Switch Account
+                </button>
+            </form>
+            <form method="POST" style="margin: 0;">
+                <button type="submit" name="logout" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
+    <div style="margin-top: 50px;"></div> <!-- Spacer for fixed header -->
+    
     <!-- Student-specific attendance details view -->
     <div class="container mt-4">
         <div class="card mb-4">
@@ -179,51 +226,110 @@ if (isset($_GET['student_id']) && isset($_GET['meeting_id'])) {
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover table-striped mb-0">
+                    <table class="table table-hover table-striped mb-0 attendance-table">
                         <thead class="sticky-top bg-white">
                             <tr>
-                                <th>Date</th>
-                                <th>Meeting ID</th>
-                                <th>Meeting Time (IST)</th>
-                                <th>Joined At (IST)</th>
-                                <th>Left At (IST)</th>
-                                <th class="text-end">Attended Duration</th>
-                                <th class="text-end">Attendance %</th>
+                                <th class="bg-light border-end"><i class="fas fa-calendar-alt"></i> Date</th>
+                                <th class="bg-light border-end"><i class="fas fa-video"></i> Meeting ID</th>
+                                <th class="bg-light border-end"><i class="fas fa-clock"></i> Meeting Time (IST)</th>
+                                <th class="bg-light"><i class="fas fa-sign-in-alt"></i> Joined At (IST)</th>
+                                <th class="bg-light"><i class="fas fa-sign-out-alt"></i> Left At (IST)</th>
+                                <th class="text-end bg-light"><i class="fas fa-hourglass-half"></i> Attended Duration</th>
+                                <th class="text-end bg-light"><i class="fas fa-percentage"></i> Attendance %</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (!empty($attendance_records)): ?>
-                                <?php foreach ($attendance_records as $index => $record):
-                                    // Calculate session duration and attendance percentage
-                                    $session_duration = strtotime($record['session_end']) - strtotime($record['session_start']);
-                                    $attendance_percent = $session_duration > 0 ? ($record['attended_duration'] / $session_duration) * 100 : 0;
+                                <?php 
+                                // Group attendance records by meeting_id and meeting_time
+                                $grouped_records = [];
+                                foreach ($attendance_records as $record) {
+                                    $group_key = $record['meeting_id'] . '|' . $record['meeting_time'] . '|' . $record['date'];
+                                    if (!isset($grouped_records[$group_key])) {
+                                        $grouped_records[$group_key] = [
+                                            'meeting_info' => [
+                                                'date' => $record['date'],
+                                                'meeting_id' => $record['meeting_id'],
+                                                'meeting_time' => $record['meeting_time']
+                                            ],
+                                            'sessions' => []
+                                        ];
+                                    }
+                                    $grouped_records[$group_key]['sessions'][] = $record;
+                                }
+                                
+                                foreach ($grouped_records as $group_key => $group):
+                                    $meeting_info = $group['meeting_info'];
+                                    $sessions = $group['sessions'];
+                                    $session_count = count($sessions);
                                     
-                                    // Format times for display
-                                    $joinTimeIST = !empty($record['join_time']) ? date('M j, Y H:i:s', strtotime($record['join_time'])) : '-';
-                                    $leaveTimeIST = !empty($record['leave_time']) ? date('M j, Y H:i:s', strtotime($record['leave_time'])) : '-';
+                                    foreach ($sessions as $session_index => $record):
+                                        // Calculate session duration and attendance percentage
+                                        $session_duration = strtotime($record['session_end']) - strtotime($record['session_start']);
+                                        $attendance_percent = $session_duration > 0 ? ($record['attended_duration'] / $session_duration) * 100 : 0;
+                                        
+                                        // Format times for display
+                                        $joinTimeIST = !empty($record['join_time']) ? date('M j, Y H:i:s', strtotime($record['join_time'])) : '-';
+                                        $leaveTimeIST = !empty($record['leave_time']) ? date('M j, Y H:i:s', strtotime($record['leave_time'])) : 'Still in meeting';
                                 ?>
-                                    <tr>
-                                        <td><?= htmlspecialchars($record['date']) ?></td>
-                                        <td><?= htmlspecialchars($record['meeting_id']) ?></td>
-                                        <td><?= htmlspecialchars($record['meeting_time']) ?></td>
-                                        <td><?= $joinTimeIST ?></td>
-                                        <td><?= $leaveTimeIST ?></td>
-                                        <td class="text-end">
-                                            <?php
-                                            // Format duration as hours and minutes
-                                            if ($record['attended_duration'] > 0) {
-                                                $hours = floor($record['attended_duration'] / 3600);
-                                                $minutes = floor(($record['attended_duration'] % 3600) / 60);
-                                                echo ($hours > 0 ? $hours . ' hr ' : '') . $minutes . ' min';
-                                            } else {
-                                                echo '-';
-                                            }
-                                            ?>
-                                        </td>
-                                        <td class="text-end <?= $attendance_percent > 75 ? 'text-success' : ($attendance_percent > 50 ? 'text-warning' : 'text-danger') ?>">
-                                            <?= round($attendance_percent, 1) ?>%
-                                        </td>
-                                    </tr>
+                                        <tr <?= $session_index > 0 ? 'class="grouped-session"' : '' ?>>
+                                            <?php if ($session_index === 0): ?>
+                                                <td rowspan="<?= $session_count ?>" class="align-middle border-end border-primary" style="background-color: #f8f9fa;">
+                                                    <strong><?= htmlspecialchars($meeting_info['date']) ?></strong>
+                                                </td>
+                                                <td rowspan="<?= $session_count ?>" class="align-middle border-end border-primary" style="background-color: #f8f9fa;">
+                                                    <strong><?= htmlspecialchars($meeting_info['meeting_id']) ?></strong>
+                                                </td>
+                                                <td rowspan="<?= $session_count ?>" class="align-middle border-end border-primary" style="background-color: #f8f9fa;">
+                                                    <strong><?= htmlspecialchars($meeting_info['meeting_time']) ?></strong>
+                                                </td>
+                                            <?php endif; ?>
+                                            <td><?= $joinTimeIST ?></td>
+                                            <td><?= $leaveTimeIST ?></td>
+                                            <td class="text-end">
+                                                <?php
+                                                // Format duration as hours and minutes
+                                                if ($record['attended_duration'] > 0) {
+                                                    $hours = floor($record['attended_duration'] / 3600);
+                                                    $minutes = floor(($record['attended_duration'] % 3600) / 60);
+                                                    echo ($hours > 0 ? $hours . ' hr ' : '') . $minutes . ' min';
+                                                } else {
+                                                    echo '-';
+                                                }
+                                                ?>
+                                            </td>
+                                            <td class="text-end">
+                                                <span class="attendance-percentage <?= $attendance_percent > 75 ? 'attendance-excellent' : ($attendance_percent > 50 ? 'attendance-good' : 'attendance-poor') ?>">
+                                                    <?= round($attendance_percent, 1) ?>%
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                    <?php if ($session_count > 1): ?>
+                                        <!-- Summary row for multiple sessions -->
+                                        <tr class="table-info border-top border-2 border-primary">
+                                            <td colspan="4" class="text-end fw-bold">
+                                                <i class="fas fa-calculator"></i> Total for this meeting:
+                                            </td>
+                                            <td class="text-end fw-bold">
+                                                <?php
+                                                $total_duration = array_sum(array_column($sessions, 'attended_duration'));
+                                                $total_hours = floor($total_duration / 3600);
+                                                $total_minutes = floor(($total_duration % 3600) / 60);
+                                                echo ($total_hours > 0 ? $total_hours . ' hr ' : '') . $total_minutes . ' min';
+                                                ?>
+                                            </td>
+                                            <td class="text-end fw-bold">
+                                                <?php
+                                                $meeting_duration = strtotime($sessions[0]['session_end']) - strtotime($sessions[0]['session_start']);
+                                                $total_attendance_percent = $meeting_duration > 0 ? ($total_duration / $meeting_duration) * 100 : 0;
+                                                ?>
+                                                <span class="attendance-percentage <?= $total_attendance_percent > 75 ? 'attendance-excellent' : ($total_attendance_percent > 50 ? 'attendance-good' : 'attendance-poor') ?>">
+                                                    <i class="fas fa-chart-pie"></i> <?= round($total_attendance_percent, 1) ?>%
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
@@ -258,7 +364,10 @@ if (isset($_GET['student_id']) && isset($_GET['meeting_id'])) {
     
     // Handle case where meeting doesn't exist
     if (!$meetingData) {
-        echo "<div class='alert alert-danger'>Meeting not found in database.</div>";
+        echo "<script>
+                alert('Meeting is not completed yet. Attendance data will be available after the meeting ends.');
+                window.history.back();
+              </script>";
         exit;
     }
     
@@ -334,6 +443,12 @@ if (isset($_GET['student_id']) && isset($_GET['meeting_id'])) {
                         <p class="text-muted"><i class="fas fa-clock me-1"></i>
                             Duration: <?= round($total_meeting_duration / 60) ?> minutes
                         </p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <a href="export_attendance.php?meeting_id=<?= htmlspecialchars($meetingId) ?>" 
+                           class="btn btn-success">
+                            <i class="fas fa-download me-1"></i>Export to Excel
+                        </a>
                     </div>
                 </div>
             </div>
@@ -412,6 +527,118 @@ if (isset($_GET['student_id']) && isset($_GET['meeting_id'])) {
     <?php
 }
 ?>
+
+<!-- Custom CSS for improved attendance table layout -->
+<style>
+    /* Enhanced table styling for grouped attendance records */
+    .attendance-table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .attendance-table .grouped-session {
+        border-left: 3px solid #007bff;
+    }
+    
+    .attendance-table .grouped-session td {
+        border-top: 1px dashed #dee2e6;
+    }
+    
+    /* Styling for merged cells */
+    .attendance-table td[rowspan] {
+        vertical-align: middle;
+        font-weight: 600;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-right: 2px solid #007bff;
+        position: relative;
+    }
+    
+    .attendance-table td[rowspan]::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(to bottom, #007bff, #0056b3);
+    }
+    
+    /* Session divider styling */
+    .session-divider {
+        border-top: 2px solid #007bff !important;
+        background-color: #f0f7ff !important;
+    }
+    
+    /* Summary row styling */
+    .table-info.border-top {
+        background-color: #e3f2fd !important;
+        border-top: 3px solid #1976d2 !important;
+    }
+    
+    /* Hover effects */
+    .attendance-table tbody tr:hover {
+        background-color: #f8f9fa;
+        transform: translateX(2px);
+        transition: all 0.2s ease;
+    }
+    
+    .attendance-table tbody tr:hover td[rowspan] {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    }
+    
+    /* Responsive table improvements */
+    @media (max-width: 768px) {
+        .attendance-table {
+            font-size: 0.85rem;
+        }
+        
+        .attendance-table td[rowspan] {
+            min-width: 120px;
+        }
+    }
+    
+    /* Animation for session groups */
+    .grouped-session {
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* Status badges */
+    .attendance-percentage {
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.375rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+    
+    .attendance-excellent {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .attendance-good {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .attendance-poor {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+</style>
 
 <!-- Bootstrap and custom scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
